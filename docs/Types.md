@@ -235,7 +235,7 @@ Defines different types of player movement states for the client-side movement p
 
 ## `pmflags_t`
 
-Player movement flags used for prediction and physics. Mainly used to keep track of the player's movement state.
+Player movement flags used for prediction and physics. Mainly used to keep track of the player's movement state. They are defined as bitflags meaning a pmove_state_t can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
 
 | Member | Description |
 | --- | --- |
@@ -251,3 +251,18 @@ Player movement flags used for prediction and physics. Mainly used to keep track
 | ✨🪽 PMF_NO_ANGULAR_PREDICTION | Angular equivalent of `PMF_NO_POSITIONAL_PREDICTION` disablind angular prediction. |
 | ✨🪽 PMF_IGNORE_PLAYER_COLLISION | Don't collide with other players. |
 | ✨🪽 PMF_TIME_TRICK | If set then `pm_time` is the time remaining to start a trick jump. |
+
+## `pmove_state_t`
+
+Player's movement state.
+
+| Member | Description |
+| --- | --- |
+| pm_type | [Player movement type; see pmtype_t](Types#pmtype_t) |
+| origin | Player position. |
+| velocity | Player velocity. |
+| pm_flags | [Player movement flags; see pmflags_t](Types#pmflags_t) |
+| pm_time | Movement-related timers. |
+| gravity | Current gravity value applied to the player. |
+| delta_angles | Angle offsets; used for spawns, rotating platforms, teleports. |
+| ✨🪽 viewheight | New field describing the viewhegiht output; used for crouch prediction. |
