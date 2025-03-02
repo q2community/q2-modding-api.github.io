@@ -218,3 +218,17 @@ Trace which is used for , hit detection, movement calculations and physics inter
 | ent | The entity that was hit (if there was one). |
 | ✨🪽 plane2| When a trace impacts multiple places at destination the collision system will now require both of them. The "second best" plane. |
 | ✨🪽 surface2| The second best surface hit. Must be null if second surface was not hit. |
+
+## `pmtype_t`
+
+Defines different types of player movement states for the client-side movement prediction.
+
+| Member | Description |
+| --- | --- |
+| PM_NORMAL | Standard player movement. |
+| ✨🪽 PM_GRAPPLE | Used for grappling hook, not affected by gravity and is instead pulled towards `velocity`. |
+| ✨🪽 PM_NOCLIP | This is what `PM_SPECTATOR` represents in 🍦. |
+| PM_SPECTATOR | 🍦No clipping mode, allows free movement with no gravity or collision. ✨🪽 Now cannot enter walls but can go through brush entities. |
+| PM_DEAD | Player is dead, prevents acceleration and turning but allows minor physics effects such as gravity. |
+| PM_GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
+| PM_FREEZE | Player is completely frozen preventing all input and movement. |
