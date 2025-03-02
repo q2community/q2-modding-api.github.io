@@ -232,3 +232,22 @@ Defines different types of player movement states for the client-side movement p
 | PM_DEAD | Player is dead, prevents acceleration and turning but allows minor physics effects such as gravity. |
 | PM_GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
 | PM_FREEZE | Player is completely frozen preventing all input and movement. |
+
+## `pmflags_t`
+
+Player movement flags used for prediction and physics. Mainly used to keep track of the player's movement state.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 PMF_NONE | Representation for no flags; the same as zero. |
+| PMF_DUCKED | Player is crouching. |
+| PMF_JUMP_HELD | Jump button is being held. |
+| PMF_ON_GROUND | Player is on solid ground. |
+| PMF_TIME_WATERJUMP | Water jump state; player is jumping out of water. |
+| PMF_TIME_LAND | Small delay after landing when the player can jump again. |
+| PMF_TIME_TELEPORT | Stops movement briefly after teleporting. |
+| 🍦&nbsp;PMF_NO_PREDICTION<br>✨&nbsp;🪽&nbsp;PMF_NO_POSITIONAL_PREDICTION | Disables movement prediction. (Used for grappling hook). ✨🪽 Only disables prediction on origin, allowing angles to be predicted.|
+| ✨🪽 PMF_ON_LADDER | Player is on a ladder. |
+| ✨🪽 PMF_NO_ANGULAR_PREDICTION | Angular equivalent of `PMF_NO_POSITIONAL_PREDICTION` disablind angular prediction. |
+| ✨🪽 PMF_IGNORE_PLAYER_COLLISION | Don't collide with other players. |
+| ✨🪽 PMF_TIME_TRICK | If set then `pm_time` is the time remaining to start a trick jump. |
