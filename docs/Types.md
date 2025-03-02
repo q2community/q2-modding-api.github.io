@@ -189,3 +189,15 @@ Collision plane which is fundamental to collision detection. Defines boundaries 
 | type | Categorizes the plane based on which axis it aligns with. |
 | signbits | Stores a bitmask for fast dot product to help define which side of the plane a point lies on. |
 | 🍦✨ pad | Padding to ensure struct alignment, for performance reasons. Has no meaning. |
+
+## `csurface_t`
+
+Surface definition, stores surface properties used for rendering, collision detection and physics interaction.
+
+| Member | Description |
+| --- | --- |
+| name | Name for the texture assigned to the surface. |
+| flags | [Surface flags; see surfflags_t](Types#surfflags_t) |
+| value | Material specific value. |
+| ✨🪽 id | Used by the client to index footstep sounds. |
+| ✨🪽 material | Material ID for this texinfo. |
