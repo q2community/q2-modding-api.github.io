@@ -201,3 +201,20 @@ Surface definition, stores surface properties used for rendering, collision dete
 | value | Material specific value. |
 | ✨🪽 id | Used by the client to index footstep sounds. |
 | ✨🪽 material | Material ID for this texinfo. |
+
+## `trace_t`
+
+Trace which is used for , hit detection, movement calculations and physics interactions.
+
+| Member | Description |
+| --- | --- |
+| allsolid | If the trace is completely inside a solid object.  |
+| startsolid | If the starting point of trace is insied a solid object. |
+| fraction | How far the trace moved before hitting something. |
+| endpos | The final position where the trace stopped. |
+| plane | The surface normal at impact. |
+| surface | The surface that was hit. ✨This value must never be null. |
+| contents | The type of material  that was hit; [Content flags; see contents_t](Types#contents_t) |
+| ent | The entity that was hit (if there was one). |
+| ✨🪽 plane2| When a trace impacts multiple places at destination the collision system will now require both of them. The "second best" plane. |
+| ✨🪽 surface2| The second best surface hit. Must be null if second surface was not hit. |
