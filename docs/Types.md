@@ -198,13 +198,13 @@ Surface definition, stores surface properties used for rendering, collision dete
 | --- | --- |
 | name | Name for the texture assigned to the surface. |
 | flags | [Surface flags; see surfflags_t](Types#surfflags_t) |
-| value | Material specific value. |
-| ✨🪽 id | Used by the client to index footstep sounds. |
-| ✨🪽 material | Material ID for this texinfo. |
+| value | Material specific value. Only used for light emission in vanilla. |
+| ✨🪽 id | Used by the client to index footstep sounds, offset by 1 if non-`null`, otherwise it's zero. |
+| ✨🪽 material | Material name for this texinfo; this is defined by the `.mat` file attached to a particular texture. |
 
 ## `trace_t`
 
-Trace which is used for , hit detection, movement calculations and physics interactions.
+This struct is returned by value by the trace functions ([gi.trace](Server-Imports#trace)), and contains information about a box or point that is sweeped through the BSP and through entities.
 
 | Member | Description |
 | --- | --- |
@@ -213,11 +213,11 @@ Trace which is used for , hit detection, movement calculations and physics inter
 | fraction | How far the trace moved before hitting something. |
 | endpos | The final position where the trace stopped. |
 | plane | The surface normal at impact. |
-| surface | The surface that was hit. ✨This value must never be null. |
-| contents | The type of material  that was hit; [Content flags; see contents_t](Types#contents_t) |
+| surface | The surface that was hit. ✨ This value must never be `null`. |
+| contents | The type of material that was hit; [Content flags; see contents_t](Types#contents_t) |
 | ent | The entity that was hit (if there was one). |
-| ✨🪽 plane2| When a trace impacts multiple places at destination the collision system will now require both of them. The "second best" plane. |
-| ✨🪽 surface2| The second best surface hit. Must be null if second surface was not hit. |
+| ✨🪽 plane2| When a trace impacts multiple places at destination the collision system will now require both of them; this is the 'second best' plane. |
+| ✨🪽 surface2 | The second best surface hit. Must be `null` if second surface was not hit. |
 
 ## `pmtype_t`
 
@@ -225,13 +225,13 @@ Defines different types of player movement states for the client-side movement p
 
 | Member | Description |
 | --- | --- |
-| PM_NORMAL | Standard player movement. |
-| ✨🪽 PM_GRAPPLE | Used for grappling hook, not affected by gravity and is instead pulled towards `velocity`. |
-| ✨🪽 PM_NOCLIP | This is what `PM_SPECTATOR` represents in 🍦. |
-| PM_SPECTATOR | 🍦No clipping mode, allows free movement with no gravity or collision. ✨🪽 Now cannot enter walls but can go through brush entities. |
-| PM_DEAD | Player is dead, prevents acceleration and turning but allows minor physics effects such as gravity. |
-| PM_GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
-| PM_FREEZE | Player is completely frozen preventing all input and movement. |
+| NORMAL | Standard player movement. |
+| ✨🪽 GRAPPLE | Used for grappling hook, not affected by gravity and is instead pulled towards `velocity`. |
+| ✨🪽 NOCLIP | No clipping against anything; flying physics. This is what `SPECTATOR` represents in 🍦. |
+| SPECTATOR | 🍦 No clipping mode, allows free movement with no gravity or collision. ✨🪽 Now cannot enter walls but can go through brush entities. |
+| DEAD | Player is dead; prevents acceleration and turning but allows minor physics effects such as gravity. |
+| GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
+| FREEZE | Player is completely frozen preventing all input and movement. |
 
 ## `pmflags_t`
 
@@ -239,18 +239,18 @@ Player movement flags used for prediction and physics. Mainly used to keep track
 
 | Member | Description |
 | --- | --- |
-| ✨🪽 PMF_NONE | Representation for no flags; the same as zero. |
-| PMF_DUCKED | Player is crouching. |
-| PMF_JUMP_HELD | Jump button is being held. |
-| PMF_ON_GROUND | Player is on solid ground. |
-| PMF_TIME_WATERJUMP | Water jump state; player is jumping out of water. |
-| PMF_TIME_LAND | Small delay after landing when the player can jump again. |
-| PMF_TIME_TELEPORT | Stops movement briefly after teleporting. |
-| 🍦&nbsp;PMF_NO_PREDICTION<br>✨&nbsp;🪽&nbsp;PMF_NO_POSITIONAL_PREDICTION | Disables movement prediction. (Used for grappling hook). ✨🪽 Only disables prediction on origin, allowing angles to be predicted.|
-| ✨🪽 PMF_ON_LADDER | Player is on a ladder. |
-| ✨🪽 PMF_NO_ANGULAR_PREDICTION | Angular equivalent of `PMF_NO_POSITIONAL_PREDICTION` disablind angular prediction. |
-| ✨🪽 PMF_IGNORE_PLAYER_COLLISION | Don't collide with other players. |
-| ✨🪽 PMF_TIME_TRICK | If set then `pm_time` is the time remaining to start a trick jump. |
+| ✨🪽 NONE | Representation for no flags; the same as zero. |
+| DUCKED | Player is crouching. |
+| JUMP_HELD | Jump button is being held. |
+| ON_GROUND | Player is on solid ground. |
+| TIME_WATERJUMP | Water jump state; player is jumping out of water. |
+| TIME_LAND | Small delay after landing when the player can jump again. |
+| TIME_TELEPORT | Stops movement briefly after teleporting. |
+| 🍦&nbsp;NO_PREDICTION<br>✨&nbsp;🪽&nbsp;NO_POSITIONAL_PREDICTION | Disables movement prediction. (Used for grappling hook). ✨🪽 Only disables prediction on origin, allowing angles to be predicted.|
+| ✨🪽 ON_LADDER | Player is on a ladder. |
+| ✨🪽 NO_ANGULAR_PREDICTION | Angular equivalent of `NO_POSITIONAL_PREDICTION`; disables angular prediction. |
+| ✨🪽 IGNORE_PLAYER_COLLISION | Don't predict collision with other players. |
+| ✨🪽 TIME_TRICK | If set then `pm_time` is the time remaining to start a 'trick jump', which is a canonized version of a bug in the vanilla movement code that allowed for quick multi-jumps. |
 
 ## `pmove_state_t`
 
@@ -259,10 +259,10 @@ Player's movement state.
 | Member | Description |
 | --- | --- |
 | pm_type | [Player movement type; see pmtype_t](Types#pmtype_t) |
-| origin | Player position. |
-| velocity | Player velocity. |
+| origin | Player position. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
+| velocity | Player velocity. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
 | pm_flags | [Player movement flags; see pmflags_t](Types#pmflags_t) |
-| pm_time | Movement-related timers. |
+| pm_time | A time value, used for certain movement flags that affect movement over a short period of time. In 🍦 these are 8 milliseconds per 1 value (`/ 8` and `* 8` to encode and decode, respectively). In ✨🪽 these are just in milliseconds. |
 | gravity | Current gravity value applied to the player. |
-| delta_angles | Angle offsets; used for spawns, rotating platforms, teleports. |
-| ✨🪽 viewheight | New field describing the viewhegiht output; used for crouch prediction. |
+| delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
+| ✨🪽 viewheight | New field describing the viewheight (offset from the origin to the eye position); used for crouch prediction. |
