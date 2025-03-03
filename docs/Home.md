@@ -1,3 +1,5 @@
+# Home
+
 Welcome to the Quake II Modding wiki!
 
 ***

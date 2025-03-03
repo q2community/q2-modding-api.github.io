@@ -1,3 +1,5 @@
+# Entity Lifecycle
+
 Entities are the main component of "things" in Quake II. They represent anything that can be seen, heard, or interacted with.
 
 ## Map entities

@@ -1,3 +1,5 @@
+# Types
+
 This page goes through the most common Quake II-specific types you'll come across in Quake II modding, and explains their purpose & how to manipulate them. This will cover the mathematical & engine-shared types first, and only briefly go into detail on specific types that are used in the vanilla Quake II mod experience.
 
 ## `vec3_t`
