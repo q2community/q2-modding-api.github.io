@@ -14,6 +14,39 @@ Time in Quake II is represented as a number that is kept track of on the game si
 
 ✨🪽 Times are represented as `int64` and stored in the `gtime_t` type. It contains several functions to create times from different units, as well as converting those times back into different components. (✨ You can also use the `_ms`, `_sec`, etc literal postfixes to easily create constants of units of time.)
 
+## `print_type_t`
+
+A print priority level, that tells the client how important the message is and whether it should be filtered or not.
+
+In most engines, the `msg` userinfo cvar can be used to filter out certain types of messages that you don't want to receive.
+
+🍦✨ The enum constants are globals prefixed with the string `PRINT_` to prevent name clashes.
+
+✨🪽 There are also bitflags that can be mixed with any level type.
+
+| Member | Description |
+| --- | --- |
+| LOW | Low priority messages, such as pickups. |
+| MEDIUM | Medium priority messages, such as death messages. |
+| HIGH | High priority messages; anything that is more important than the other two. |
+| CHAT | A chat message. This message is also green and makes a specific sound on the client when displayed. |
+| ✨🪽 TYPEWRITER | The message is displayed in the center of the screen, one character at a time like a typewriter. This is used for level goals in the re-release. |
+| ✨🪽 CENTER | The message is displayed in the center of the screen all at once. |
+| ✨🪽 TTS | Like `HIGH`, but will be spoken audibly if the engine supports text-to-speech. |
+| ✨🪽 BROADCAST | Bitflag that can be mixed with any of the above types. If set, `Loc_Print` will deliver this message to all clients. |
+| ✨🪽 NO_NOTIFY | Bitflag that can be mixed with any of the above types. If set, clients will only display this message in the console and not on the notification bar. |
+
+## `area_solidity_t`
+
+The type of area you want to grab from a call to [BoxEdicts](Server-Imports#BoxEdicts).
+
+🍦✨ The enum constants are globals prefixed with the string `AREA_` to prevent name clashes.
+
+| Member | Description |
+| --- | --- |
+| SOLID | Includes any entity that is `SOLID_BBOX` or `SOLID_BSP`. |
+| TRIGGER | Includes any entity that is `SOLID_TRIGGER`. |
+
 ## `entity_state_t`
 
 The entity state stores the data that is used for transmission to the client. It basically describes everything the client needs to render a given entity, as well as some other data that the server uses for things like collision.
@@ -95,6 +128,8 @@ Stores the information needed for the client to render a view.
 
 Flags used to define different cvar behaviours. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
 
+🍦✨ The enum constants are globals prefixed with the string `CVAR_` to prevent name clashes.
+
 | Flag Name | Description |
 | --- | --- |
 | ✨🪽 NOFLAGS | Representation for no flags; the same as zero. |
@@ -124,6 +159,8 @@ Representation of a console variable. These are variables that is reachable thro
 ## `contents_t`
 
 Content flags are used to determine properties of solid geometry in the game world. These flags determine how entities interact with brushes, and are returned in [game imports that query the world, such as trace and pointcontents](Server-Imports). They are bitflags, and a brush can contain multiple contents. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+🍦✨ The enum constants are globals prefixed with the string `CONTENTS_` to prevent name clashes.
 
 > [!NOTE]
 > The first 7 bits are mutually exclusive, and create visible surfaces. 
@@ -158,9 +195,32 @@ Content flags are used to determine properties of solid geometry in the game wor
 | ✨🪽 PLAYER | Used only on player entities, allows tracing to exclude / include them. | 
 | ✨🪽 PROJECTILE | Used only on projectiles, allows tracing to exclude / include them. |
 
+There are also several built-in `MASK`s, which provide simple masks that are used in various routines in Q2, to prevent needing to type them out every time.
+
+🪽 The mask enums are children of `contents_t`. This may change in the future.
+
+| Constant | Description |
+| --- | --- |
+| MASK_ALL | Hits every content type. |
+| MASK_SOLID | Only the fully solid contents (`SOLID` and `WINDOW`). |
+| MASK_PLAYERSOLID | Content types that player movement considers solid (`SOLID`, `PLAYERCLIP`, `WINDOW`, `MONSTER`, ✨🪽 and `PLAYER`) |
+| MASK_DEADSOLID | Content mask used for dead players (`SOLID`, `PLAYERCLIP`, `WINDOW`). |
+| MASK_MONSTERSOLID | Content mask used for monster movement (`SOLID`, `MONSTERCLIP`, `WINDOW`, `MONSTER`, ✨🪽 and `PLAYER`). |
+| MASK_WATER | Hits every liquid-like content type. |
+| MASK_OPAQUE | Hits any surface the game considers opaque (`SOLID`, `SLIME`, `LAVA`). This isn't entirely always true, though, since slime and lava *can* be translucent, but it often isn't. This is mainly used for things like visibility routines. |
+| MASK_SHOT | Content types hitscan shots can collide with (`SOLID`, `MONSTER`, `WINDOW`, `DEADMONSTER`, ✨🪽 and `PLAYER`) |
+| MASK_CURRENT | Mask that includes all of the `CURRENT_` flags. |
+| ✨🪽 MASK_BLOCK_SIGHT | Used by bot code; things the bots consider sight-blocking (`SOLID`, `LAVA`, `SLIME`, `MONSTER`, `PLAYER`) |
+| ✨🪽 MASK_NAV_SOLID | Used by bot code; things the bots consider navigation-blocking (`SOLID`, `PLAYERCLIP`, `WINDOW`) |
+| ✨🪽 MASK_LADDER_NAV_SOLID | Used by bot code; things the bots consider navigation-blocking for ladders (`SOLID`, `WINDOW`) |
+| ✨🪽 MASK_WALK_NAV_SOLID | Used by bot code; things the bots consider navigation-walkable (`SOLID`, `PLAYERCLIP`, `WINDOW`, `MONSTERCLIP`) |
+| ✨🪽 MASK_PROJECTILE | Used by projectiles for what contents they can collide with (`MASK_SHOT` and `PROJECTILECLIP`) |
+
 ## `surfflags_t`
 
 Surface flags are used to determine properties for materials and textures applied to brushes. These flags controls lighting, physics, rendering effects and texture behaviour. They are defined as bitflags meaning a surface can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+🍦✨ The enum constants are globals prefixed with the string `SURF_` to prevent name clashes.
 
 | Member | Description |
 | --- | --- |
@@ -208,16 +268,16 @@ This struct is returned by value by the trace functions ([gi.trace](Server-Impor
 
 | Member | Description |
 | --- | --- |
-| allsolid | If the trace is completely inside a solid object.  |
-| startsolid | If the starting point of trace is insied a solid object. |
-| fraction | How far the trace moved before hitting something. |
+| allsolid | If the trace is completely inside of a brush with the input content `mask`, this will be true.  |
+| startsolid | If the trace started inside of a brush with the input content `mask` but was able to escape, this will be true (usually for partially-occluded collisions). |
+| fraction | How far the trace moved between `start` and `end` of the trace before hitting something, as a fraction between `0.0` and `1.0`. If the value is `1.0`, nothing was hit (`endpos` will equal `end`). If the value is `0.0`, something was hit immediately (`endpos` will equal `start`). Any other value is interpolated between the two positions by this value. |
 | endpos | The final position where the trace stopped. |
 | plane | The surface normal at impact. |
-| surface | The surface that was hit. ✨ This value must never be `null`. |
-| contents | The type of material that was hit; [Content flags; see contents_t](Types#contents_t) |
-| ent | The entity that was hit (if there was one). |
-| ✨🪽 plane2| When a trace impacts multiple places at destination the collision system will now require both of them; this is the 'second best' plane. |
-| ✨🪽 surface2 | The second best surface hit. Must be `null` if second surface was not hit. |
+| surface | The surface that was hit. ✨🪽 This value will never be `null`. |
+| contents | The content flags of the brush that was hit; [Content flags; see contents_t](Types#contents_t) |
+| ent | The entity that was hit (if there was one). This is very rarely (if ever) `null`, and will instead point to the `world` if nothing was hit. |
+| ✨🪽 plane2 | When a trace impacts multiple places at destination the collision system will now require both of them; this is the 'second best' plane. |
+| ✨🪽 surface2 | The second best surface hit. Will be `null` if a second surface was not hit. |
 
 ## `pmtype_t`
 
