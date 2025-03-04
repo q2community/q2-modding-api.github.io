@@ -347,3 +347,19 @@ Button bits that is used to represent button states for a client. They are defin
 | ✨🪽 CROUCH | The crouch button is pressed; replaces the `usercmd_t::upmove`. |
 | ANY | Any button is pressed; used for general input detection. |
 
+## `usercmd_t`
+
+Usercommand that represents a player's input comands that is sent from the client to the server each frame.
+
+| Member | Description |
+| --- | --- |
+| msec | The frame time in milliseconds since the last command. |
+| buttons | [Button bitmask; see button_t](Types#button_t) |
+| angles | View angles (yaw, pitch, roll). |
+| forwardmove | Player movement along the forward axis; positive value means forward, negative value means backwards. |
+| sidemove | Player movement along the left/right axis; positive value means right, negative value means left. |
+| 🍦 upmove | Player movement along the vertical axis; positive means up or jumping, negative means down or crouching. |
+| 🍦 impulse | Special action trigger. |
+| 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
+| ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
+
