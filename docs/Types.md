@@ -363,3 +363,14 @@ Usercommand that represents a player's input comands that is sent from the clien
 | 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
 | ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
 
+## `water_level_t`
+
+New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded rather than refered to by name.
+
+| Value | Member | Description |
+| --- | --- | --- |
+| 0 | WATER_NONE | Not touching water. |
+| 1 | WATER_FEET | Water is at feet level. |
+| 2 | WATER_WAIST | Water is at waist level.  |
+| 3 | WATER_UNDER | Entity is completely under water. |
+
