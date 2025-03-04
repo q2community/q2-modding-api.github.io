@@ -374,3 +374,17 @@ New waterlevel type (added in ✨🪽) that is used to give names to the differe
 | 2 | WATER_WAIST | Water is at waist level.  |
 | 3 | WATER_UNDER | Entity is completely under water. |
 
+## `refdef_flags_t`
+
+Refresh definition flags that affect the entire scene. They are defined as bitflags meaning one `refdef_flags_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| UNDERWATER | When the player is underwater this flag warps the screen in order to create a distortion effect. |
+| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. |
+| IRGOGGLES | Infrared goggles effect. |
+| UVGOGGLES | Ultraviolet goggles effect. |
+| ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
+
+
