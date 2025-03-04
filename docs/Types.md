@@ -332,3 +332,18 @@ Player's movement state.
 | gravity | Current gravity value applied to the player. |
 | delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
 | ✨🪽 viewheight | New field describing the viewheight (offset from the origin to the eye position); used for crouch prediction. |
+
+## `button_t`
+
+Button bits that is used to represent button states for a client. They are defined as bitflags meaning one `button_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| ATTACK |The fire/attack button is pressed. |
+| USE | The use/interaction button is pressed. |
+| ✨🪽 HOLSTER | Corresponds to new `+holster` command. |
+| ✨🪽 JUMP | The jump button is pressed; replaces the `usercmd_t::upmove`.  |
+| ✨🪽 CROUCH | The crouch button is pressed; replaces the `usercmd_t::upmove`. |
+| ANY | Any button is pressed; used for general input detection. |
+
