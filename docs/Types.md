@@ -416,3 +416,48 @@ Player movement state, used for player movement and collision detection. This ty
 | ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
 | ✨🪽 step_clip | If we steped on top of an object from below. |
 | ✨🪽 impact_delta | Impact delta used for falling damage. |
+
+## `effects_t`
+
+Visual effects that are applied to entities. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ROTATE | Rotation effect for power-ups and items. |
+| GIB | Leaves a blood trail. |
+| ✨🪽 BOB | Weapon bobbing effect. |
+| BLASTER | Blaster shot glow and trail. |
+| ROCKET | ROcket projective glow and trail. |
+| GRENADE | Grenade projectile. |
+| HYPERBLASTER | Hyperblaster glow and trail. |
+| BFG | BFG green glow and energy effect. |
+| COLOR_SHELL | Colored glow effect. |
+| POWERSCREEN | Energy shield effect. ✨🪽 This effect uses a different model and is scaled to the monster's size. |
+| ANIM01 | Automatic animation cycling effect. Cycles between frames 0 and 1 at 2Hz. |
+| ANIM23 | Cycles between frames 2 and 3 at 2Hz. |
+| ANIM_ALL | Cycles through all frames at 2Hz. |
+| ANIM_ALLFAST | Cycles through all frames at 10hz. |
+| FLIES | Fly particle effect. |
+| QUAD | Quad damage effect. |
+| PENT | Pentagram effect used for invulnerability. |
+| TELEPORTER | Teleportation burst effect. |
+| FLAG1 | CTF red flag effect. |
+| FLAG2 | CTF blue flag effect. |
+| IONRIPPER | Ion Ripper projectile trail. |
+| GREENGIB | Green colored gibs. |
+| BLUEHYPERBLASTER | Blue colored hyperblaster glow and trail. |
+| SPINNINGLIGHTS | Rotation lights. |
+| PLASMA | Plasma based weapon glow and trail. |
+| TRAP | Visual effect for traps. |
+| TRACKER | Used for homing projectiles. |
+| DOUBLE | Double damage effect. |
+| SPHERETRANS | Partially transparent effect. |
+| TAGTRAIL | Special projectile trail. |
+| HALF_DAMAGE | Half damage effect. |
+| TRACKERTRAIL | Homing projectile damage effect. |
+| ✨🪽 DUALFIRE | Similar to `QUAD` but for dualfire damage. |
+| ✨🪽 HOLOGRAM | Used for the N64 hologram effect. |
+| ✨🪽 FLASHLIGHT | Marks the entity to have a Flashlight like effect. |
+| ✨🪽 BARREL_EXPLODING | Used before an explobox explodes, emits steam particles from the barrel. |
+| ✨🪽 TELEPORTER2 | Used for N64 teleporter. |
+| ✨🪽 GRENADE_LIGHT | Small light around monster grenades. |
