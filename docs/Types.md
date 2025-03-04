@@ -8,13 +8,17 @@ A 3d vector; it might represent a position, a unit vector, a vector * magnitude,
 
 🍦 Be careful when passing vectors as parameters, as the type is a simple typedef to a C array, and these have weird semantics.
 
+## 🍦 `qboolean`
+
+Quake II's initial source was written pre-C99 and didn't have a native boolean type. As a result, it uses a custom enum named `qboolean` with `false` and `true` values. In re-release, this was changed to the canonical `bool` type (which, in C, matches `stdbool.h`'s `_Bool`).
+
 ## time
 
 Time in Quake II is represented as a number that is kept track of on the game side. The game [runs a level tick](Level-Lifecycle.md) which increases the current time of the level, and this value persists separately on levels (every new level always starts at a time of zero).
 
 🍦 Times are represented as `float` **seconds** in most cases, and in a few other cases they are stored as `int` **frames**. A frame in Quake II is 100 milliseconds (10hz). The `FRAMETIME` macro contains the number of seconds in a frame (0.1) which can be used to convert to other units.
 
-✨🪽 Times are represented as `int64` and stored in the `gtime_t` type. It contains several functions to create times from different units, as well as converting those times back into different components. (✨ You can also use the `_ms`, `_sec`, etc literal postfixes to easily create constants of units of time.)
+✨🪽 Times are represented as `int64` and stored in the `gtime_t` type. It contains several functions to create times from different units, as well as converting those times back into different components. (✨ You can also use the `_ms`, `_sec`, etc literal postfixes to easily create constants of units of time.) The game imports some useful constants from the server for timing, such as [`frame_time_s`](Server-Imports#frame_time_s) and [`frame_time_ms`](Server-Imports#frame_time_ms), to use for calculations.
 
 ## `print_type_t`
 
@@ -56,8 +60,8 @@ The entity state stores the data that is used for transmission to the client. It
 | Member | Description |
 | --- | --- |
 | number | The numeric index of this entity. This should never be touched. |
-| origin | The entity's position in the world. [Changing this requires re-linking the entity.](../Entity-Lifecycle#linking) |
-| angles | The entity's Euler angles. [Changing this may require re-linking the entity if it is a brush model.](../Entity-Lifecycle#linking) |
+| origin | The entity's position in the world. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
+| angles | The entity's Euler angles. [Changing this may require re-linking the entity if it is a brush model.](Entity-Lifecycle#linking) |
 | old_origin | The entity's previous in the world. This is mainly used for interpolating entities on the client side, but some types of entities (like `RF_BEAM`) will use this for a secondary position. |
 | modelindex | [Model index](model-index) |
 | modelindex2 | Secondary [model index](model-index) |
@@ -96,10 +100,10 @@ Stores the data that is transmitted between the server & client, as well as vari
 | 🍦&nbsp;headnode | The headnode we are linked into, if we overrun the cluster count. Read-only, not useful to the game code. |
 | areanum, areanum2 | The current areas this entity is linked into. Entities can be linked into two areas, if they are straggling a water brush or standing inside of a door for instance. See [Areas](Areas). (🍦 this is different/unrelated to the `area` member) |
 | svflags | A bit set of flags the server & game use for various things. See [svflags_t](Types#svflags_t) |
-| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](../Entity-Lifecycle#linking) |
-| absmin, absmax | The entity's absolute box in the world, expanded by 1 on each axis. This is the same as (origin + mins) - { 1, 1, 1} and (origins + maxs) + { 1, 1, 1 } respectively. This is read-only. |
+| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
+| absmin, absmax | The entity's absolute box in the world, expanded by 1 on each axis. This is the same as (origin + mins) - { 1, 1, 1 } and (origins + maxs) + { 1, 1, 1 } respectively, *except* for brush models where this value may also be expanded to include rotation. This is read-only. |
 | size | The entity's size (mins + maxs). This is read-only. |
-| solid | The entity's solidity type. `TRIGGER` and `BBOX` are both usable by any entity, and simply link the entity into either trigger or solid area links, respectively. The `BSP` value can only be used on brush models (entities whose modelindex points to an inline BSP model, such as `*2`). [Changing this requires re-linking the entity.](../Entity-Lifecycle#linking) |
+| solid | The entity's solidity type. `TRIGGER` and `BBOX` are both usable by any entity, and simply link the entity into either trigger or solid area links, respectively. The `BSP` value can only be used on brush models (entities whose modelindex points to an inline BSP model, such as `*2`). [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
 | clipmask | The entity's content mask. The server does not use this field, it is only in this part of the structure for historical reasons. Physics routines of the game use this to control which entities this entity will touch when moving. |
 | owner | The entity that owns this entity. When non-null, traces that have an `ignore` field will also ignore the owner (or ownee); for instance, shots fired from your own weapon are owned by you and ignore their owner when they move, which allows them to pass through you and vice versa. |
 
@@ -178,7 +182,7 @@ Content flags are used to determine properties of solid geometry in the game wor
 | WATER | Water volumes; this allows swimming and other water physics. |
 | MIST | Extra visible content type that, by default, has no interaction with entities. |
 | ✨🪽 NO_WATERJUMP | Flag to make water not allow jumping; used for traps where waterjump should be disallowed. | 
-| ✨🪽 PROJECTILECLIP | Blocks movement from entities with [svflags_t::PROJECTILE](Types#svflags_t] server flags. | 
+| ✨🪽 PROJECTILECLIP | Blocks movement from entities with [svflags_t::PROJECTILE](Types#svflags_t) server flags. | 
 | AREAPORTAL | Used for `func_areaportal`s. (✨🪽 also used as a special value by the game) |
 | PLAYERCLIP | Blocks movement from entities with [svflags_t::PLAYER](Types#svflags_t) server flags. |
 | MONSTERCLIP | Monsters include this flag in their clipmask. |

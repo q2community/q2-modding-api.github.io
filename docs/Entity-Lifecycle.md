@@ -19,7 +19,7 @@ The format is simple, and follows this basic grammar:
 }
 ```
 
-This string is passed to the [[game import "SpawnEntities"|server-imports]], and the game is then responsible for actually creating the entities from these key/value pairs; this is done through `ED_ParseEdict`, which then parses the individual key/value pairs via `ED_ParseField` and places them into the correct memory location.
+This string is passed to the [server export "SpawnEntities"](Server-Exports#SpawnEntities), and the game is then responsible for actually creating the entities from these key/value pairs; this is done through `ED_ParseEdict`, which then parses the individual key/value pairs via `ED_ParseField` and places them into the correct memory location.
 
 Once parsed, the entity is then passed off to `ED_CallSpawn` which attempts to initialize the entity based on its `classname` field:
 * if an item exists in the `itemlist` with the classname, `SpawnItem` is called to handle the spawning.
@@ -34,19 +34,19 @@ Inside of the actual spawn function, follow the rest of the next section (except
 
 Entities can be created programmatically via `G_Spawn`. This function finds a free entity slot and returns the entity pointer that can then be modified by the game. If you don't change any members, an entity will simply exist in the world and do nothing, using up a slot. You must be careful that your entity correctly gets freed when it is no longer required.
 
-If you intend your entity to be "sensed" by either clients or the server (either by being visible, audible, or touchable), you **must** [[link|Entity-Lifecycle#linking]] the entity into the world. If you no longer need the entity to be accessible, you must unlink the entity. If you don't need the entity to be ever synced to the client, you should set the [[svflags_t\|Types#svflags_t]] `NOCLIENT`, which speeds up processing on the server side as it knows it doesn't need to try checking for [[PVS/PHS|PVS]] reachability.
+If you intend your entity to be "sensed" by either clients or the server (either by being visible, audible, or touchable), you **must** [link](Entity-Lifecycle#linking) the entity into the world. If you no longer need the entity to be accessible, you must unlink the entity. If you don't need the entity to be ever synced to the client, you should set the [svflags_t](Types#svflags_t) `NOCLIENT`, which speeds up processing on the server side as it knows it doesn't need to try checking for [PVS/PHS](PVS) reachability.
 
-You can set various members of the entities' [entity_state_t](../Types#entity_state_t) to make the entity visible or audible. For a minimally-visible entity, you'll need an `origin` and a `modelindex`, `effects` or `sound` at the very least, and [[link|Entity-Lifecycle#linking]] the entity.
+You can set various members of the entities' [entity_state_t](../Types#entity_state_t) to make the entity visible or audible. For a minimally-visible entity, you'll need an `origin` and a `modelindex`, `effects` or `sound` at the very least, and [link](Entity-Lifecycle#linking) the entity.
 
-To make the entity touchable by other objects, you must set [the 'solid' member](../Types#edict_t) to either `BBOX`, `TRIGGER` or `BSP`. When using `BSP`, or when using `TRIGGER` with a BSP model (eg a `trigger_multiple`), you must also set the `modelindex` field to a valid BSP entity **which should only be done [[through the game import 'setmodel'|server-imports]]**. In all other cases, you should set the `mins` and `maxs` fields to the two corner points on an axis-aligned bounding box. You may also have to set additional [[svflags_t\|Types#svflags_t]] to change how this entity should be treated when it comes to traces against them. Finally, [[link|Entity-Lifecycle#linking]] the entity.
+To make the entity touchable by other objects, you must set [the 'solid' member](../Types#edict_t) to either `BBOX`, `TRIGGER` or `BSP`. When using `BSP`, or when using `TRIGGER` with a BSP model (eg a `trigger_multiple`), you must also set the `modelindex` field to a valid BSP entity **which should only be done [through the game import 'setmodel'](Server-Imports#setmodel)**. In all other cases, you should set the `mins` and `maxs` fields to the two corner points on an axis-aligned bounding box. You may also have to set additional [svflags_t](Types#svflags_t) to change how this entity should be treated when it comes to traces against them. Finally, [link](Entity-Lifecycle#linking) the entity.
 
-To make the entity "do" things, see [[Thinking|Entity-Lifecycle#thinking]]. To allow an entity to interact with the world, see [[Physics|Entity-Lifecycle#physics]].
+To make the entity "do" things, see [Thinking](Entity-Lifecycle#thinking). To allow an entity to interact with the world, see [Physics](Entity-Lifecycle#physics).
 
 ## Linking
 
-For an entity to be visible to either the server or client, it must be linked. This is done [[through the game import 'linkentity'|server-imports]]. This function will link the entity into the correct world area with other entities, and sets up various members to their correct values (such as `absmin`, `absmax` and `size`) if they are solid. It also sets up their visibility state, which is used by the server to tell if an entity should be sent to a given client.
+For an entity to be visible to either the server or client, it must be linked. This is done [through the game import 'linkentity'](Server-Imports#linkentity). This function will link the entity into the correct world area with other entities, and sets up various members to their correct values (such as `absmin`, `absmax` and `size`) if they are solid. It also sets up their visibility state, which is used by the server to tell if an entity should be sent to a given client.
 
-At any time, you can unlink entities from the world [[through the game import 'unlinkentity'|server-imports]]. This will make the entity 'invisible' to [['BoxEdicts' and 'trace'|server-imports]] and make them not appear to any clients. This does not free the entity, however, and it may still exist and perform tasks in the game code. The base game does not make use of this feature, though; the only thing the base game uses unlinking for is to hide body queue bodies, remove players, and temporarily hide an entity during teleportation so that you don't telefrag yourself.
+At any time, you can unlink entities from the world [through the game import 'unlinkentity'](Server-Imports#unlinkentity). This will make the entity 'invisible' to ['BoxEdicts' and 'trace'](Server-Imports#collision-detection) and make them not appear to any clients. This does not free the entity, however, and it may still exist and perform tasks in the game code. The base game does not make use of this feature, though; the only thing the base game uses unlinking for is to hide body queue bodies, remove players, and temporarily hide an entity during teleportation so that you don't telefrag yourself.
 
 ## Physics
 

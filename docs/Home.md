@@ -26,7 +26,7 @@ You might see an entire section dedicated to a single release, (🪽 or perhaps 
 
 ### memory
 
-🍦✨ Any memory allocated from your mod should always go through the [[tagged memory allocator|tagged-memory]]. This allows the engine to properly clean up memory if anything unexpected happens. You won't suffer any major consequences by using regular heap memory, but anything especially long term should be allocated using the above imports.
+🍦✨ Any memory allocated from your mod should always go through the [tagged memory allocator](tagged-memory). This allows the engine to properly clean up memory if anything unexpected happens. You won't suffer any major consequences by using regular heap memory, but anything especially long term should be allocated using the above imports.
 
 ### handle / pointer
 
@@ -39,11 +39,11 @@ These two terms are interchangeable, and will refer to some pre-allocated chunk 
 
 ### server
 
-The server is the engine portion of the code that runs the game. It [[imports|server-imports]] and [[exports|server-exports]] functions, constants, structs, and variables to communicate with the game module.
+The server is the engine portion of the code that runs the game. It [imports](server-imports) and [exports](server-exports) functions, constants, structs, and variables to communicate with the game module.
 
 ### edict / entity
 
-`edict` and `entity` will often be used interchangeably, but they technically refer to two related concepts. `edict` is short for `entity dictionary`, and is a vestigial name left over from Quake; maps store key/value pairs of strings (a dictionary), and these pairs are then [[parsed into an entity before they spawn|entity-lifecycle]]. An entity refers to the final entity pointer (🍦✨ `edict_t` 🪽 `ASEntity`).
+`edict` and `entity` will often be used interchangeably, but they technically refer to two related concepts. `edict` is short for `entity dictionary`, and is a vestigial name left over from Quake; maps store key/value pairs of strings (a dictionary), and these pairs are then [parsed into an entity before they spawn](entity-lifecycle). An entity refers to the final entity pointer (🍦✨ `edict_t` 🪽 `ASEntity`).
 
 In general, though, `edict` usually refers to the [server](#server)-visible portion of an entity, whereas `entity` refers to all of the additional data that the game adds on top of this. (🍦✨ `edict_t` keeps all of this data inside of it; see `edict_shared_t` for the server-visible fields, whose position & types **cannot be modified** by the game code.) (🪽 The data is split between `edict_t`, which is a thin handle to the server-visible fields, and `ASEntity`, which is where all of the game data goes into.)
 
