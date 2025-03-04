@@ -387,4 +387,32 @@ Refresh definition flags that affect the entire scene. They are defined as bitfl
 | UVGOGGLES | Ultraviolet goggles effect. |
 | ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
 
+## `pmove_t`
 
+Player movement state, used for player movement and collision detection. This type contains the player's current movement state, input commands and movement results.
+
+| Member | Description |
+| --- | --- |
+| s | [Player movement state; see pmove_state_t](Types#pmove_state_t) |
+| cmd | [User command; see usercmd_t](Types#usercmd_t) |
+| snapinitial | Used to check for external state modifications. |
+| 🍦numtouch | Number of entities that the player touched. |
+| 🍦touchents | Array of entities that the player collided with. |
+| ✨🪽 touch | [Touch list; see touch_list_t](Types#touch_list_t) |
+| viewangles | Player's view angles. |
+| 🍦 viewheight | the viewheight (offset from the origin to the eye position); used for crouch prediction. (✨🪽 moved this to `pmove_state_t`) |
+| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking). |
+| groundentity | The entity that the player is standing on. |
+| groundplane | [Collision plane; see cplane_t](Types#cplane_t) |
+| watertype | Type of liquid the player is standing on?. |
+| waterlevel | [Water level; see water_level_t](Types#water_level_t) |
+| ✨🪽 player | [Edict; see edict_t](Types#edict_t) |
+| trace() | Collision detection function. |
+| ✨🪽 clip() | World clipping function. |
+| pointcontents() | Function to check the material at a point. |
+| ✨🪽 viewoffset | Player's view offset. |
+| ✨🪽 screen_blend | Output variable containing the full-screen blend to apply to the view. |
+| ✨🪽 rdflags | [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
+| ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
+| ✨🪽 step_clip | If we steped on top of an object from below. |
+| ✨🪽 impact_delta | Impact delta used for falling damage. |
