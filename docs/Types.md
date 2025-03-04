@@ -423,6 +423,7 @@ Visual effects that are applied to entities. They are defined as bitflags meanin
 
 | Member | Description |
 | --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
 | ROTATE | Rotation effect for power-ups and items. |
 | GIB | Leaves a blood trail. |
 | ✨🪽 BOB | Weapon bobbing effect. |
@@ -468,6 +469,7 @@ Special render effects for entities. They are defined as bitflags meaning one `r
 
 | Member | Description |
 | --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
 | MINLIGHT | Ensures entity always has some lighting applied to it. |
 | VIEWERMODEL | Prevents entity from being seen from the player's eyes; can still be seen from reflections. |
 | WEAPONMODEL | The opposite of `VIEWERMODEL` this entity is only drawn from the player's view. |
@@ -497,3 +499,114 @@ Special render effects for entities. They are defined as bitflags meaning one `r
 | ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
 | ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; used to fix a jarring hitching sound. |
 | ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
+
+## `player_muzzle_t`
+
+Player muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| BLASTER | Blaster shot. |
+| MACHINEGUN | Machine gun muzzle flash. |
+| SHOTGUN | Shotgun muzzle flash. |
+| CHAINGUN1 | Chaingun fire; first stage with slow fire rate. |
+| CHAINGUN2 | Chainfun fire; second stage with medium fire rate. |
+| CHAINGUN3 | Chaingun fire; third stage with full fire rate. |
+| RAILGUN | Railgun shot effect. |
+| ROCKET | Rocket launcher muzzle flash. |
+| GRENADE | Grenade launcher muzzle flash. |
+| LOGIN | Effect when a player spawns into the game. |
+| LOGOUT | Effect when a player leaves the game. |
+| RESPAWN | Effect when player respawns after dying. |
+| BFG | BFG muzzle flash. |
+| SSHOTGUN | Super shotgun muzzle flash. |
+| HYPERBLASTER | Hyperblaster muzzle flash. |
+| ITEMRESPAWN | Item respawn effect. |
+| IONRIPPER | Ion ripper muzzle flash. |
+| BLUEHYPERBLASTER | Alternative hyperblaster muzzle flash. |
+| PHALANX | Phalanx cannon muzzle flash. |
+| ✨🪽 BFG2 | Alternative muzzle flash for BFG. |
+| ✨🪽 PHALANX2 | Alternative muzzle flash for the Phalanx. |
+| SILENCED | Flag to suppress muzzle flash for silenced weapons. |
+| ETF_RIFLE | ETF rifle muzzle flash. |
+| 🍦UNUSED<br>✨🪽 PROX | Prox launcher muzzle flash. |
+| ✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash |
+| SHOTGUN2 | Alternative shotgun muzzle flash. |
+| HEATBEAM | Heat beam lazer muzzle flash. |
+| BLASTER2 | Alternative blaster muzzle flash. |
+| TRACKER | Homing projectile muzzle flash. |
+| NUKE1 | Nuclear weapon; stage 1 explosion flash. |
+| NUKE2 | Nuclear weapon; stage 2 explosion flash. |
+| NUKE4 | Nuclear weapon; stage 4 explosion flash. |
+| NUKE8 | Nuclear weapon; stage 8 explosion flash. |
+
+## `monster_muzzleflash_id_t`
+
+Monster muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 UNUSED_0 | Not used; save as zero. |
+| MZ2_TANK_BLASTER_1 - 3 | Tank blaster muzzle position. |
+| MZ2_TANK_MACHINEGUN_1 - 19 | Tank machinegun muzzle position. |
+| MZ2_TANK_ROCKET_1 - 3 | Tank rocket muzzle position. |
+| MZ2_INFANTRY_MACHINEGUN_1 - 13 | Infantry machinegun muzzle flash position. |
+| MZ2_SOLDIER_BLASTER_1 - 8 | Soldier blaster muzzle position. |
+| MZ2_SOLDIER_SHOTGUN_1 - 8 | Soldier shotgun muzzle position. |
+| MZ2_SOLDIER_MACHINEGUN_1 - 8 | Soldier machinegun muzzle position. |
+| MZ2_GUNNER_MACHINEGUN_1 - 8 | Gunner machinegun muzzle position. |
+| MZ2_GUNNER_GRENADE_1 - 4 | Gunner grenade launcher muzzle position. |
+| MZ2_CHICK_ROCKET_1 | Chick rocket launcher muzzle flash. |
+| MZ2_FLYER_BLASTER_1 - 2 | Flyer blaster muzzle flash position. |
+| MZ2_MEDIC_BLASTER_1 - 2 | Medic blaster muzzle flash position. |
+| MZ2_GLADIATOR_RAILGUN_1 | Gladiator railgun muzzle flash. |
+| MZ2_HOVER_BLASTER_1 | Hover blaster muzzle flash. |
+| MZ2_SUPERTANK_MACHINEGUN_1 - 6 | Super tank machinegun muzzle flash position. |
+| MZ2_SUPERTANK_ROCKET_1 - 3 | Super tank rocket launcher muzzle flash position. |
+| MZ2_BOSS2_MACHINEGUN_L1 - L5 | Boss 2 left-side machinegun muzzle flash position. |
+| MZ2_BOSS2_ROCKET_1 - 4 | Boss 2 rocket launcher muzzle flash positions. |
+| MZ2_BOSS2_MACHINEGUN_R1 - R5 | Boss 2 right-side machinegun muzzle flash position. |
+| MZ2_MAKRON_BFG | Makrok BGF muzzle flash. |
+| MZ2_MAKRON_BLASTER_1 - 17 | Makron blaster muzzle flash position. |
+| MZ2_MAKRON_RAILGUN_1 | Makron railgun muzzle flash. |
+| MZ2_JORG_MACHINEGUN_L1 - L6 | Jorg left-side machinegun muzzle flash position. |
+| MZ2_JORG_MACHINEGUN_R1 - R6 | Jorg right-side machinegun muzzle flash position. |
+| MZ2_JORG_BFG_1 | Jorg BFG muzzle flash. |
+| MZ2_CARRIER_MACHINEGUN_L1 - L2 | Carrier left-side machinegun muzzle flash position. |
+| MZ2_CARRIER_MACHINEGUN_R1 - R2 | Carrier right-side machinegun muzzle flash position. |
+| MZ2_CARRIER_GRENADE | Carrier grenade launcher muzzle flash. |
+| MZ2_CARRIER_RAILGUN | Carrier railgun muzzle flash. |
+| MZ2_CARRIER_ROCKET_1 - 4 | Carrier rocket launcher muzzle flash position. |
+| MZ2_WIDOW_DISRUPTOR | Widow disruptor muzzle flash. |
+| MZ2_WIDOW_BLASTER | Widow blaster muzzle flash. |
+| MZ2_WIDOW_RAIL | Widow railgun muzzle flash. |
+| MZ2_WIDOW_PLASMABEAM | Widow plasma beam muzzle flash. |
+| MZ2_WIDOW_RAIL_LEFT | Widow left-side railgun muzzle flash. |
+| MZ2_WIDOW_RAIL_RIGHT | Widow right-side railgun muzzle flash. |
+| MZ2_WIDOW_BLASTER_SWEEP1 - 9 | Widow blaster sweeping muzzle flash position. |
+| MZ2_WIDOW_BLASTER_100 - 0 - 70L | Widow's various blaster positions. |
+| MZ2_WIDOW2_BEAMER_1 - 5 | Widow2 beamer muzzle flash positions. |
+| MZ2_WIDOW2_BEAM_SWEEP_1 - 11 | Widow2 beamer sweeping muzzle flash positions. |
+| ✨🪽 MZ2_SOLDIER_RIPPER_1 - 8 | Soldier ripper muzzle flash positions. |
+| ✨🪽 MZ2_SOLDIER_HYPERGUN_1 - 8 | Soldier hyperblaster muzzle flash positions. |
+| ✨🪽 MZ2_GUARDIAN_BLASTER | PSX Guardian blaster muzzle flash. |
+| ✨🪽 MZ2_ARACHNID_RAIL1 - _UP2 | PSX Arachnid rail muzzle flashes.|
+| ✨🪽 MZ2_INFANTRY_MACHINEGUN_14 - 21 | Infantry run-attack muzzle flash. |
+| ✨🪽 MZ2_GUNCMDR_CHAINGUN_1 - 2 | Gunner commander chaingun muzzle flash position. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_MORTAR_1 - 3 | Gunner commander grenade mortar muzzle flash positions. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_FRONT_1 - 3 | Gunner commander grenade launcher front muzzle flash positions. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_CROUCH_1 - 3 | Gunner commander grenade launcehr crouching muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_BLASTER_9 | Soldier blaster prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_SHOTGUN_9 | Soldier shotgun prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_MACHINEGUN_9 | Soldier machinegun prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_RIPPER_9 | Soldier ripper prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_HYPERGUN_9 | Soldier hypergun prone muzzle flash position. |
+| ✨🪽 MZ2_GUNNER_GRENADE2_1 - 4 | Alternative firing animation for gunner grenade launcher. |
+| ✨🪽 MZ2_INFANTRY_MACHINEGUN_22 | Alternative firing animation for infantry machinegun. |
+| ✨🪽 MZ2_SUPERTANK_GRENADE_1 - 2 | Supertank grenade launcher muzzle flash position. |
+| ✨🪽 MZ2_HOVER_BLASTER_2 | Hover blaster other side muzzle flash. |
+| ✨🪽 MZ2_DAEDALUS_BLASTER_2 | Daedalus other side blaster muzzle flash. |
+| ✨🪽 MZ2_MEDIC_HYPERBLASTER1_1 - 12 | Medic hyperblaster sweed muzzle flash positions. |
+| ✨🪽 MZ2_MEDIC_HYPERBLASTER2_1 - 12 | Medic commander hyperblaster sweed muzzle flash positions. |
+| ✨🪽 MZ2_LAST | Only used internally for compile-time checks. |
