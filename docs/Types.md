@@ -419,7 +419,7 @@ Player movement state, used for player movement and collision detection. This ty
 
 ## `effects_t`
 
-Visual effects that are applied to entities. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+Visual effects that are applied to entities. They are defined as bitflags meaning one `effects_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
 
 | Member | Description |
 | --- | --- |
@@ -461,3 +461,39 @@ Visual effects that are applied to entities. In 🍦 these flags are defined as 
 | ✨🪽 BARREL_EXPLODING | Used before an explobox explodes, emits steam particles from the barrel. |
 | ✨🪽 TELEPORTER2 | Used for N64 teleporter. |
 | ✨🪽 GRENADE_LIGHT | Small light around monster grenades. |
+
+## `renderfx_t`
+
+Special render effects for entities. They are defined as bitflags meaning one `renderfx_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| MINLIGHT | Ensures entity always has some lighting applied to it. |
+| VIEWERMODEL | Prevents entity from being seen from the player's eyes; can still be seen from reflections. |
+| WEAPONMODEL | The opposite of `VIEWERMODEL` this entity is only drawn from the player's view. |
+| FULLBRIGHT | Makes the entity always fully lit; ignores ambient lighting. |
+| DEPTHHACK | Adjust Z-buffer depth for viewmodels preventing them to clip through walls. |
+| TRANSLUCENT | Makes the entity semi-transparent. |
+| 🍦FRAMELERP<br>✨🪽 NO_ORIGIN_LERP | Disables origin interpolation. |
+| BEAM | Marks the entity as a beam effect; used for lasers and lighting. ✨🪽 Can now create custom segmented beams by setting a non-one modelindex on beams. |
+| CUSTOMSKIN | Use custom skin texture from the `image_precache`. |
+| GLOW | Applies a pulsing glow effect. |
+| SHELL_RED | Adds a red energy shell effect. |
+| SHELL_GREEN | Adds a green energy shell effect. |
+| SHELL_BLUE | Adds a blue energy shell effect. |
+| ✨🪽NOSHADOW | Marks entity to not have a shadow. |
+| ✨🪽CASTSHADOW | Mark entity that cast light in the world. |
+| IR_VISIBLE | Entity is visible through infrared goggles. |
+| SHELL_DOUBLE | Adds both red and blue shell effects. |
+| SHELL_HALF_DAM | Indicates half-damage protection. |
+| USE_DISGUISE | Marks the entity as using a disguise. |
+| ✨🪽 SHELL_LITE_GREEN | Equivalent shell color for `DUALFIRE`. |
+| ✨🪽 CUSTOM_LIGHT | Creates custom dynamic light at the position of the object. |
+| ✨🪽 FLARE | Marks entity to be rendered as a flare instead of the usual entity rendering. |
+| ✨🪽 OLD_FRAME_LERP | Signals to the client that `s.old_frame` should be used for the next frame and respected by the client. |
+| ✨🪽 DOT_SHADOW | Draw a blob shadow underneath the entity. |
+| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slows this can be replaced. |
+| ✨🪽 NO_LOD | Original MD2 models will be used for LOD. |
+| ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
+| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; used to fix a jarring hitching sound. |
+| ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
