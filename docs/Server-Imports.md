@@ -779,6 +779,9 @@ The `areatype` parameter indicates whether you wish to query a list of `SOLID` o
 * if `maxcount` is 0, the value of `list` is ignored and the function returns the number of entities that *would* have been captured into the list. This shouldn't be used for pre-allocation, however, as that requires two passes which is wasteful.
 * if `filter` is non-`null`, the filter function will be called with the entity handle being tested against and the `filter_data` pointer passed into the function. The filter function returns a [BoxEdictsResult_t](Types#BoxEdictsResult_t), which dictates whether the entity should be put into the `list` and whether the search can be stopped early. The filter can also be used to dynamically capture results instead of trying to capture them into a fixed-size list.
 
+> [!WARNING]
+> ✨🪽 Do not modify the state of the world inside of the `filter` callback - doing so may result in undefined behavior or crash the server. It is meant to be a *filter*, not an execution callback.
+
 <!-- tabs:start -->
 
 #### **🍦**
