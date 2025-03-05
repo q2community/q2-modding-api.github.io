@@ -2,15 +2,13 @@
 
 The base game provides several useful functions for performing tasks that make writing game functions easier. 
 
-# High Level Mechanics
-
 These document the functions used for performing higher level tasks, and provide common examples on how you might use them.
 
-## Finding Entities
+# Finding Entities
 
 You'll often need to query the world to find entities. The game code provides several ways of iterating entities depending on your requirements.
 
-### Fetch Entity By Number
+## Fetch entity by number
 
 Entities are consistently referred to by a particular number/index. This corresponds to their index in the entity list.
 
@@ -54,7 +52,7 @@ ASEntity @ent = cast<ASEntity>(e.as_obj);
 
 <!-- tabs:end -->
 
-### Iterate all entities
+## Iterate all entities
 
 This is the lowest level method of entity iteration, and simply iterates all entities that are currently in the world. This allows you to perform whatever filtering you wish.
 
@@ -102,13 +100,13 @@ for (int i = 0; i < num_edicts; i++)
 > [!TIP]
 > The start of your iteration can skip a few entries if you don't care about including the world entity (the world is always at position `0`), or players (players are always at position `1` to the value of the `maxclients` cvar). There's also a queue of bodies used by dead players that take up the first 8 entity slots. If you're only wanting to iterate through non-player entities & not the world & not the dead bodies, you can start iteration at `1 + game.maxclients + BODY_QUEUE_SIZE` (🪽 `1 + max_clients + BODY_QUEUE_SIZE`).
 
-### Iterate nearby entities
+## Iterate nearby entities
 
 You've got several options for iterating based on distance. The most customizable option is to use [Iterate all entities](#iterate-all-entities); this will let you control the exact conditions you need.
 
 For convenience, there's a couple built-in functions you can use that handle the most common conditions.
 
-#### findradius
+### findradius
 
 This function is used in radius damage calculation, and is a quick way of iterating nearby entities that are `inuse` and `solid`. It uses a simple distance check between the two positions to calculate the distance.
 
@@ -188,7 +186,7 @@ while ((@e = findradius(e, org, 256)) !is null)
 <!-- tabs:end -->
 </details>
 
-#### BoxEdicts
+### BoxEdicts
 
 The [`BoxEdicts` server import](Server-Imports#boxedicts) can quickly find entities in a box. The server uses world links to speed up selection. It does not require iterating every entity, and instead only iterates world links that the box covers.
 
@@ -385,7 +383,7 @@ foreach (ASEntity @e : results)
 <!-- tabs:end -->
 </details>
 
-### Finding entities by member/field
+## Finding entities by member/field
 
 Another common operation is to find entities that match a given condition based on a member, such as their `classname`. In the majority of cases, this is done by string; the samples here will only focus on string-based searches.
 
@@ -465,5 +463,120 @@ while ((@e = find_by_str<ASEntity>(e, "classname", "monster_soldier")) !is null)
     // perform task on `e`
 }
 ```
+
+<!-- tabs:end -->
+
+# Math
+
+There's several built-in functions to help with common mathematical operations. The details behind them are too much to describe in this documentation, but the most commonly used ones will be documented here.
+
+## Converting Euler angles to vectors
+
+Quake II provides a simple function to convert a Euler angle to three directional vectors representing `forward`, `right` and `up`: `AngleVectors`. For those coming from QuakeC, this is the Q2 version of what used to be called `makevectors`.
+
+Function declaration:
+
+<!-- tabs:start -->
+
+#### **🍦**
+
+```cpp
+void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+```
+
+#### **✨**
+
+```cpp
+inline void AngleVectors(const vec3_t &angles, vec3_t *forward, vec3_t *right, vec3_t *up);
+
+// the re-release codebase provides a struct-based method, in case you prefer using destructuring:
+inline angle_vectors_t AngleVectors(const vec3_t &angles);
+
+// there's also some convenience wrappers so that the function can be called identically to the C version:
+inline void AngleVectors(const vec3_t &angles, vec3_t &forward, vec3_t &right, vec3_t &up);
+inline void AngleVectors(const vec3_t &angles, vec3_t &forward, vec3_t &right, nullptr_t);
+inline void AngleVectors(const vec3_t &angles, vec3_t &forward, nullptr_t, vec3_t &up);
+inline void AngleVectors(const vec3_t &angles, vec3_t &forward, nullptr_t, nullptr_t);
+inline void AngleVectors(const vec3_t &angles, nullptr_t, nullptr_t, vec3_t &up);
+inline void AngleVectors(const vec3_t &angles, nullptr_t, vec3_t &right, nullptr_t);
+```
+
+#### **🪽**
+
+```cpp
+void AngleVectors(const vec3_t &in, vec3_t &out forward = void, vec3_t &out right = void, vec3_t &out up = void);
+```
+
+<!-- tabs:end -->
+
+## Converting vectors to Euler angles
+
+There's two main functions used for converting from a vector to a Euler angle: `vectoangles` and `vectoyaw`.
+
+> [!WARNING]
+> 🍦 These functions always output integer angles; if you need precise angles, you may want to lift `vectoangles2` from the client code, or from Ground Zero's codebase which makes use of it. The versions used in re-release are full precision.
+
+Function declarations:
+
+<!-- tabs:start -->
+
+#### **🍦**
+
+```cpp
+float vectoyaw (vec3_t vec);
+void vectoangles (vec3_t vec, vec3_t angles);
+```
+
+#### **✨**
+
+```cpp
+[[nodiscard]] inline float vectoyaw(const vec3_t &vec);
+[[nodiscard]] inline vec3_t vectoangles(const vec3_t &vec);
+```
+
+#### **🪽**
+
+```cpp
+float vectoyaw(const vec3_t &in) nodiscard;
+vec3_t vectoangles(const vec3_t &in) nodiscard;
+```
+
+<!-- tabs:end -->
+
+###Projecting a start position from vectors + offset
+
+Often times, you'll want to generate a new position from a source position, pushed forward/right/up by specific values. This is used in weapons, for instance, to generate the firing position, or for monsters to generate their firing location.
+
+`G_ProjectSource` and `G_ProjectSource2` are provided for just this task - it's a simple combined operation that projects the firing point from the provided inputs.
+
+There's also `P_ProjectSource`, used solely by weapons, which automatically inverts the `right` offset based on your `handedness` style. ✨🪽 This function also ensures that projectiles will hit the crosshair; in vanilla, the offset is adjusted, but not the direction.
+
+Function declarations:
+
+<!-- tabs:start -->
+
+#### **🍦**
+
+```cpp
+void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
+```
+
+#### **✨**
+
+```cpp
+void P_ProjectSource(edict_t *ent, const vec3_t &angles, vec3_t distance, vec3_t &result_start, vec3_t &result_dir, bool adjust_for_pierce = false);
+```
+
+`result_start` and `result_dir` contain the start and direction that the weapon will be firing at.
+If `adjust_for_pierce` is true, the direction will use the raw forward direction instead of adjusting using an adjusted direction to hit the monster at the crosshair; this is so you can pierce through multiple targets even when up close to an enemy without the shot being sent way off target.
+
+#### **🪽**
+
+```cpp
+void P_ProjectSource(ASEntity &ent, const vec3_t &in angles, vec3_t distance, vec3_t &out result_start, vec3_t &out result_dir, bool adjust_for_pierce = false)
+```
+
+`result_start` and `result_dir` contain the start and direction that the weapon will be firing at.
+If `adjust_for_pierce` is true, the direction will use the raw forward direction instead of adjusting using an adjusted direction to hit the monster at the crosshair; this is so you can pierce through multiple targets even when up close to an enemy without the shot being sent way off target.
 
 <!-- tabs:end -->

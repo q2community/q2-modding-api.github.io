@@ -331,7 +331,7 @@ Player's movement state.
 | pm_time | A time value, used for certain movement flags that affect movement over a short period of time. In 🍦 these are 8 milliseconds per 1 value (`/ 8` and `* 8` to encode and decode, respectively). In ✨🪽 these are just in milliseconds. |
 | gravity | Current gravity value applied to the player. |
 | delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
-| ✨🪽 viewheight | New field describing the viewheight (offset from the origin to the eye position); used for crouch prediction. |
+| ✨🪽 viewheight | Player's viewheight (offset from the origin to the eye position); used for crouch prediction. |
 
 ## `button_t`
 
@@ -359,20 +359,20 @@ Usercommand that represents a player's input comands that is sent from the clien
 | forwardmove | Player movement along the forward axis; positive value means forward, negative value means backwards. |
 | sidemove | Player movement along the left/right axis; positive value means right, negative value means left. |
 | 🍦 upmove | Player movement along the vertical axis; positive means up or jumping, negative means down or crouching. |
-| 🍦 impulse | Special action trigger. |
+| 🍦 impulse | A vestigial from Quake, referring to the `impulse` passed from the last impulse cmd. Not used by the game; use `ClientCommand` commands instead. |
 | 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
 | ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
 
 ## `water_level_t`
 
-New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded rather than refered to by name.
+New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name.
 
 | Value | Member | Description |
 | --- | --- | --- |
-| 0 | WATER_NONE | Not touching water. |
-| 1 | WATER_FEET | Water is at feet level. |
-| 2 | WATER_WAIST | Water is at waist level.  |
-| 3 | WATER_UNDER | Entity is completely under water. |
+| 0 | NONE | Not touching water. |
+| 1 | FEET | Water is at feet level. |
+| 2 | WAIST | Water is at waist level.  |
+| 3 | UNDER | Entity is completely under water. |
 
 ## `refdef_flags_t`
 
@@ -382,9 +382,9 @@ Refresh definition flags that affect the entire scene. They are defined as bitfl
 | --- | --- |
 | ✨🪽 NONE | Representation for no flags; save as zero. |
 | UNDERWATER | When the player is underwater this flag warps the screen in order to create a distortion effect. |
-| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. |
+| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. Not useful to the game code. |
 | IRGOGGLES | Infrared goggles effect. |
-| UVGOGGLES | Ultraviolet goggles effect. |
+| UVGOGGLES | Ultraviolet goggles effect. Unused. |
 | ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
 
 ## `pmove_t`
@@ -393,29 +393,32 @@ Player movement state, used for player movement and collision detection. This ty
 
 | Member | Description |
 | --- | --- |
-| s | [Player movement state; see pmove_state_t](Types#pmove_state_t) |
-| cmd | [User command; see usercmd_t](Types#usercmd_t) |
-| snapinitial | Used to check for external state modifications. |
-| 🍦numtouch | Number of entities that the player touched. |
-| 🍦touchents | Array of entities that the player collided with. |
-| ✨🪽 touch | [Touch list; see touch_list_t](Types#touch_list_t) |
+| s | Input & output variable. [Player movement state; see pmove_state_t](Types#pmove_state_t) |
+| cmd | Input variable. [User command; see usercmd_t](Types#usercmd_t) |
+| snapinitial | Input variable. Set to true if this is an 'initial position' (when state has been reset, essentially, like on respawn). |
+| 🍦 numtouch | Output variable. Number of entities that the player touched. |
+| 🍦 touchents | Output variable. Array of entities that the player collided with. |
+| ✨ touch | Output variable. [Touch list; see touch_list_t](Types#touch_list_t) |
 | viewangles | Player's view angles. |
-| 🍦 viewheight | the viewheight (offset from the origin to the eye position); used for crouch prediction. (✨🪽 moved this to `pmove_state_t`) |
-| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking). |
-| groundentity | The entity that the player is standing on. |
-| groundplane | [Collision plane; see cplane_t](Types#cplane_t) |
+| 🍦 viewheight | Output variable. The viewheight (offset from the origin to the eye position); used for crouching. (✨🪽 moved this to `pmove_state_t`) |
+| mins, maxs | Output variables. The entity's size in the world. This is an axis-aligned bounding box. |
+| groundentity | Output variable. The entity that the player is standing on. |
+| ✨🪽 groundplane | Output variable. [Collision plane; see cplane_t](Types#cplane_t) |
 | watertype | Type of liquid the player is standing on?. |
 | waterlevel | [Water level; see water_level_t](Types#water_level_t) |
-| ✨🪽 player | [Edict; see edict_t](Types#edict_t) |
-| trace() | Collision detection function. |
-| ✨🪽 clip() | World clipping function. |
-| pointcontents() | Function to check the material at a point. |
-| ✨🪽 viewoffset | Player's view offset. |
+| trace() | Collision detection function callback. |
+| pointcontents() | Function callback to check the material at a point. |
+| ✨🪽 player | Input variable. An opaque handle to an [edict; see edict_t](Types#edict_t) that refers to the current player. This is passed back to the `trace` function. |
+| ✨🪽 clip() | World clipping function callback. |
+| ✨🪽 viewoffset | Input variable. Player's view offset. |
 | ✨🪽 screen_blend | Output variable containing the full-screen blend to apply to the view. |
-| ✨🪽 rdflags | [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
+| ✨🪽 rdflags | Output variable. [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
 | ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
-| ✨🪽 step_clip | If we steped on top of an object from below. |
-| ✨🪽 impact_delta | Impact delta used for falling damage. |
+| ✨🪽 step_clip | Output variable; if we stepped up onto a step via a jump, this is set to true. Helps client prediction avoid a harsh snap. |
+| ✨🪽 impact_delta | Output variable; impact delta used for falling damage. |
+
+> [!NOTE]
+> 🪽 Due to limitations, the `touch`/`touchents`/`numtouch` members are instead member functions of `pmove_t`: `touch_length`, `touch_push_back`, `touch_get` and `touch_clear`.
 
 ## `effects_t`
 
@@ -423,7 +426,7 @@ Visual effects that are applied to entities. They are defined as bitflags meanin
 
 | Member | Description |
 | --- | --- |
-| ✨🪽 NONE | Representation for no flags; save as zero. |
+| ✨🪽 NONE | Representation for no flags; same as zero. |
 | ROTATE | Rotation effect for power-ups and items. |
 | GIB | Leaves a blood trail. |
 | ✨🪽 BOB | Weapon bobbing effect. |
@@ -463,6 +466,9 @@ Visual effects that are applied to entities. They are defined as bitflags meanin
 | ✨🪽 TELEPORTER2 | Used for N64 teleporter. |
 | ✨🪽 GRENADE_LIGHT | Small light around monster grenades. |
 
+> [!ATTENTION]
+> TODO: Document special values/masks
+
 ## `renderfx_t`
 
 Special render effects for entities. They are defined as bitflags meaning one `renderfx_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
@@ -476,7 +482,7 @@ Special render effects for entities. They are defined as bitflags meaning one `r
 | FULLBRIGHT | Makes the entity always fully lit; ignores ambient lighting. |
 | DEPTHHACK | Adjust Z-buffer depth for viewmodels preventing them to clip through walls. |
 | TRANSLUCENT | Makes the entity semi-transparent. |
-| 🍦FRAMELERP<br>✨🪽 NO_ORIGIN_LERP | Disables origin interpolation. |
+| 🍦FRAMELERP<br>✨&nbsp;🪽&nbsp;NO_ORIGIN_LERP | Disables origin interpolation. |
 | BEAM | Marks the entity as a beam effect; used for lasers and lighting. ✨🪽 Can now create custom segmented beams by setting a non-one modelindex on beams. |
 | CUSTOMSKIN | Use custom skin texture from the `image_precache`. |
 | GLOW | Applies a pulsing glow effect. |
@@ -484,7 +490,7 @@ Special render effects for entities. They are defined as bitflags meaning one `r
 | SHELL_GREEN | Adds a green energy shell effect. |
 | SHELL_BLUE | Adds a blue energy shell effect. |
 | ✨🪽NOSHADOW | Marks entity to not have a shadow. |
-| ✨🪽CASTSHADOW | Mark entity that cast light in the world. |
+| ✨🪽CASTSHADOW | Used for dynamic lights, to tell it it is a shadow-caster. |
 | IR_VISIBLE | Entity is visible through infrared goggles. |
 | SHELL_DOUBLE | Adds both red and blue shell effects. |
 | SHELL_HALF_DAM | Indicates half-damage protection. |
@@ -494,11 +500,14 @@ Special render effects for entities. They are defined as bitflags meaning one `r
 | ✨🪽 FLARE | Marks entity to be rendered as a flare instead of the usual entity rendering. |
 | ✨🪽 OLD_FRAME_LERP | Signals to the client that `s.old_frame` should be used for the next frame and respected by the client. |
 | ✨🪽 DOT_SHADOW | Draw a blob shadow underneath the entity. |
-| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slows this can be replaced. |
-| ✨🪽 NO_LOD | Original MD2 models will be used for LOD. |
+| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slots, this entity can be replaced. |
+| ✨🪽 NO_LOD | Only use high quality models if available (do not fall back to MD2s for LOD). |
 | ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
-| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; used to fix a jarring hitching sound. |
+| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; causes their Z change from previous frame to interpolate at 10hz, similar to how the player view handles stairs. |
 | ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
+
+> [!ATTENTION]
+> TODO: Document special values/masks
 
 ## `player_muzzle_t`
 
@@ -526,16 +535,15 @@ Player muzzle effects. In 🍦 these flags are defined as constant values while 
 | IONRIPPER | Ion ripper muzzle flash. |
 | BLUEHYPERBLASTER | Alternative hyperblaster muzzle flash. |
 | PHALANX | Phalanx cannon muzzle flash. |
-| ✨🪽 BFG2 | Alternative muzzle flash for BFG. |
-| ✨🪽 PHALANX2 | Alternative muzzle flash for the Phalanx. |
+| ✨🪽 BFG2 | Secondary muzzle flash for BFG (when the fire frame occurs). |
+| ✨🪽 PHALANX2 | Secondary muzzle flash for the Phalanx (right barrel). |
 | SILENCED | Flag to suppress muzzle flash for silenced weapons. |
 | ETF_RIFLE | ETF rifle muzzle flash. |
 | 🍦UNUSED<br>✨🪽 PROX | Prox launcher muzzle flash. |
-| ✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash |
-| SHOTGUN2 | Alternative shotgun muzzle flash. |
+| 🍦SHOTGUN2<br>✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash. Unused in vanilla. |
 | HEATBEAM | Heat beam lazer muzzle flash. |
-| BLASTER2 | Alternative blaster muzzle flash. |
-| TRACKER | Homing projectile muzzle flash. |
+| BLASTER2 | Unused blaster muzzle flash. |
+| TRACKER | Disruptor projectile muzzle flash. |
 | NUKE1 | Nuclear weapon; stage 1 explosion flash. |
 | NUKE2 | Nuclear weapon; stage 2 explosion flash. |
 | NUKE4 | Nuclear weapon; stage 4 explosion flash. |
