@@ -332,3 +332,281 @@ Player's movement state.
 | gravity | Current gravity value applied to the player. |
 | delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
 | ✨🪽 viewheight | New field describing the viewheight (offset from the origin to the eye position); used for crouch prediction. |
+
+## `button_t`
+
+Button bits that is used to represent button states for a client. They are defined as bitflags meaning one `button_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| ATTACK |The fire/attack button is pressed. |
+| USE | The use/interaction button is pressed. |
+| ✨🪽 HOLSTER | Corresponds to new `+holster` command. |
+| ✨🪽 JUMP | The jump button is pressed; replaces the `usercmd_t::upmove`.  |
+| ✨🪽 CROUCH | The crouch button is pressed; replaces the `usercmd_t::upmove`. |
+| ANY | Any button is pressed; used for general input detection. |
+
+## `usercmd_t`
+
+Usercommand that represents a player's input comands that is sent from the client to the server each frame.
+
+| Member | Description |
+| --- | --- |
+| msec | The frame time in milliseconds since the last command. |
+| buttons | [Button bitmask; see button_t](Types#button_t) |
+| angles | View angles (yaw, pitch, roll). |
+| forwardmove | Player movement along the forward axis; positive value means forward, negative value means backwards. |
+| sidemove | Player movement along the left/right axis; positive value means right, negative value means left. |
+| 🍦 upmove | Player movement along the vertical axis; positive means up or jumping, negative means down or crouching. |
+| 🍦 impulse | Special action trigger. |
+| 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
+| ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
+
+## `water_level_t`
+
+New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded rather than refered to by name.
+
+| Value | Member | Description |
+| --- | --- | --- |
+| 0 | WATER_NONE | Not touching water. |
+| 1 | WATER_FEET | Water is at feet level. |
+| 2 | WATER_WAIST | Water is at waist level.  |
+| 3 | WATER_UNDER | Entity is completely under water. |
+
+## `refdef_flags_t`
+
+Refresh definition flags that affect the entire scene. They are defined as bitflags meaning one `refdef_flags_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| UNDERWATER | When the player is underwater this flag warps the screen in order to create a distortion effect. |
+| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. |
+| IRGOGGLES | Infrared goggles effect. |
+| UVGOGGLES | Ultraviolet goggles effect. |
+| ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
+
+## `pmove_t`
+
+Player movement state, used for player movement and collision detection. This type contains the player's current movement state, input commands and movement results.
+
+| Member | Description |
+| --- | --- |
+| s | [Player movement state; see pmove_state_t](Types#pmove_state_t) |
+| cmd | [User command; see usercmd_t](Types#usercmd_t) |
+| snapinitial | Used to check for external state modifications. |
+| 🍦numtouch | Number of entities that the player touched. |
+| 🍦touchents | Array of entities that the player collided with. |
+| ✨🪽 touch | [Touch list; see touch_list_t](Types#touch_list_t) |
+| viewangles | Player's view angles. |
+| 🍦 viewheight | the viewheight (offset from the origin to the eye position); used for crouch prediction. (✨🪽 moved this to `pmove_state_t`) |
+| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking). |
+| groundentity | The entity that the player is standing on. |
+| groundplane | [Collision plane; see cplane_t](Types#cplane_t) |
+| watertype | Type of liquid the player is standing on?. |
+| waterlevel | [Water level; see water_level_t](Types#water_level_t) |
+| ✨🪽 player | [Edict; see edict_t](Types#edict_t) |
+| trace() | Collision detection function. |
+| ✨🪽 clip() | World clipping function. |
+| pointcontents() | Function to check the material at a point. |
+| ✨🪽 viewoffset | Player's view offset. |
+| ✨🪽 screen_blend | Output variable containing the full-screen blend to apply to the view. |
+| ✨🪽 rdflags | [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
+| ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
+| ✨🪽 step_clip | If we steped on top of an object from below. |
+| ✨🪽 impact_delta | Impact delta used for falling damage. |
+
+## `effects_t`
+
+Visual effects that are applied to entities. They are defined as bitflags meaning one `effects_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| ROTATE | Rotation effect for power-ups and items. |
+| GIB | Leaves a blood trail. |
+| ✨🪽 BOB | Weapon bobbing effect. |
+| BLASTER | Blaster shot glow and trail. |
+| ROCKET | ROcket projective glow and trail. |
+| GRENADE | Grenade projectile. |
+| HYPERBLASTER | Hyperblaster glow and trail. |
+| BFG | BFG green glow and energy effect. |
+| COLOR_SHELL | Colored glow effect. |
+| POWERSCREEN | Energy shield effect. ✨🪽 This effect uses a different model and is scaled to the monster's size. |
+| ANIM01 | Automatic animation cycling effect. Cycles between frames 0 and 1 at 2Hz. |
+| ANIM23 | Cycles between frames 2 and 3 at 2Hz. |
+| ANIM_ALL | Cycles through all frames at 2Hz. |
+| ANIM_ALLFAST | Cycles through all frames at 10hz. |
+| FLIES | Fly particle effect. |
+| QUAD | Quad damage effect. |
+| PENT | Pentagram effect used for invulnerability. |
+| TELEPORTER | Teleportation burst effect. |
+| FLAG1 | CTF red flag effect. |
+| FLAG2 | CTF blue flag effect. |
+| IONRIPPER | Ion Ripper projectile trail. |
+| GREENGIB | Green colored gibs. |
+| BLUEHYPERBLASTER | Blue colored hyperblaster glow and trail. |
+| SPINNINGLIGHTS | Rotation lights. |
+| PLASMA | Plasma based weapon glow and trail. |
+| TRAP | Visual effect for traps. |
+| TRACKER | Used for homing projectiles. |
+| DOUBLE | Double damage effect. |
+| SPHERETRANS | Partially transparent effect. |
+| TAGTRAIL | Special projectile trail. |
+| HALF_DAMAGE | Half damage effect. |
+| TRACKERTRAIL | Homing projectile damage effect. |
+| ✨🪽 DUALFIRE | Similar to `QUAD` but for dualfire damage. |
+| ✨🪽 HOLOGRAM | Used for the N64 hologram effect. |
+| ✨🪽 FLASHLIGHT | Marks the entity to have a Flashlight like effect. |
+| ✨🪽 BARREL_EXPLODING | Used before an explobox explodes, emits steam particles from the barrel. |
+| ✨🪽 TELEPORTER2 | Used for N64 teleporter. |
+| ✨🪽 GRENADE_LIGHT | Small light around monster grenades. |
+
+## `renderfx_t`
+
+Special render effects for entities. They are defined as bitflags meaning one `renderfx_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| MINLIGHT | Ensures entity always has some lighting applied to it. |
+| VIEWERMODEL | Prevents entity from being seen from the player's eyes; can still be seen from reflections. |
+| WEAPONMODEL | The opposite of `VIEWERMODEL` this entity is only drawn from the player's view. |
+| FULLBRIGHT | Makes the entity always fully lit; ignores ambient lighting. |
+| DEPTHHACK | Adjust Z-buffer depth for viewmodels preventing them to clip through walls. |
+| TRANSLUCENT | Makes the entity semi-transparent. |
+| 🍦FRAMELERP<br>✨🪽 NO_ORIGIN_LERP | Disables origin interpolation. |
+| BEAM | Marks the entity as a beam effect; used for lasers and lighting. ✨🪽 Can now create custom segmented beams by setting a non-one modelindex on beams. |
+| CUSTOMSKIN | Use custom skin texture from the `image_precache`. |
+| GLOW | Applies a pulsing glow effect. |
+| SHELL_RED | Adds a red energy shell effect. |
+| SHELL_GREEN | Adds a green energy shell effect. |
+| SHELL_BLUE | Adds a blue energy shell effect. |
+| ✨🪽NOSHADOW | Marks entity to not have a shadow. |
+| ✨🪽CASTSHADOW | Mark entity that cast light in the world. |
+| IR_VISIBLE | Entity is visible through infrared goggles. |
+| SHELL_DOUBLE | Adds both red and blue shell effects. |
+| SHELL_HALF_DAM | Indicates half-damage protection. |
+| USE_DISGUISE | Marks the entity as using a disguise. |
+| ✨🪽 SHELL_LITE_GREEN | Equivalent shell color for `DUALFIRE`. |
+| ✨🪽 CUSTOM_LIGHT | Creates custom dynamic light at the position of the object. |
+| ✨🪽 FLARE | Marks entity to be rendered as a flare instead of the usual entity rendering. |
+| ✨🪽 OLD_FRAME_LERP | Signals to the client that `s.old_frame` should be used for the next frame and respected by the client. |
+| ✨🪽 DOT_SHADOW | Draw a blob shadow underneath the entity. |
+| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slows this can be replaced. |
+| ✨🪽 NO_LOD | Original MD2 models will be used for LOD. |
+| ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
+| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; used to fix a jarring hitching sound. |
+| ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
+
+## `player_muzzle_t`
+
+Player muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| BLASTER | Blaster shot. |
+| MACHINEGUN | Machine gun muzzle flash. |
+| SHOTGUN | Shotgun muzzle flash. |
+| CHAINGUN1 | Chaingun fire; first stage with slow fire rate. |
+| CHAINGUN2 | Chainfun fire; second stage with medium fire rate. |
+| CHAINGUN3 | Chaingun fire; third stage with full fire rate. |
+| RAILGUN | Railgun shot effect. |
+| ROCKET | Rocket launcher muzzle flash. |
+| GRENADE | Grenade launcher muzzle flash. |
+| LOGIN | Effect when a player spawns into the game. |
+| LOGOUT | Effect when a player leaves the game. |
+| RESPAWN | Effect when player respawns after dying. |
+| BFG | BFG muzzle flash. |
+| SSHOTGUN | Super shotgun muzzle flash. |
+| HYPERBLASTER | Hyperblaster muzzle flash. |
+| ITEMRESPAWN | Item respawn effect. |
+| IONRIPPER | Ion ripper muzzle flash. |
+| BLUEHYPERBLASTER | Alternative hyperblaster muzzle flash. |
+| PHALANX | Phalanx cannon muzzle flash. |
+| ✨🪽 BFG2 | Alternative muzzle flash for BFG. |
+| ✨🪽 PHALANX2 | Alternative muzzle flash for the Phalanx. |
+| SILENCED | Flag to suppress muzzle flash for silenced weapons. |
+| ETF_RIFLE | ETF rifle muzzle flash. |
+| 🍦UNUSED<br>✨🪽 PROX | Prox launcher muzzle flash. |
+| ✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash |
+| SHOTGUN2 | Alternative shotgun muzzle flash. |
+| HEATBEAM | Heat beam lazer muzzle flash. |
+| BLASTER2 | Alternative blaster muzzle flash. |
+| TRACKER | Homing projectile muzzle flash. |
+| NUKE1 | Nuclear weapon; stage 1 explosion flash. |
+| NUKE2 | Nuclear weapon; stage 2 explosion flash. |
+| NUKE4 | Nuclear weapon; stage 4 explosion flash. |
+| NUKE8 | Nuclear weapon; stage 8 explosion flash. |
+
+## `monster_muzzleflash_id_t`
+
+Monster muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 UNUSED_0 | Not used; save as zero. |
+| MZ2_TANK_BLASTER_1 - 3 | Tank blaster muzzle position. |
+| MZ2_TANK_MACHINEGUN_1 - 19 | Tank machinegun muzzle position. |
+| MZ2_TANK_ROCKET_1 - 3 | Tank rocket muzzle position. |
+| MZ2_INFANTRY_MACHINEGUN_1 - 13 | Infantry machinegun muzzle flash position. |
+| MZ2_SOLDIER_BLASTER_1 - 8 | Soldier blaster muzzle position. |
+| MZ2_SOLDIER_SHOTGUN_1 - 8 | Soldier shotgun muzzle position. |
+| MZ2_SOLDIER_MACHINEGUN_1 - 8 | Soldier machinegun muzzle position. |
+| MZ2_GUNNER_MACHINEGUN_1 - 8 | Gunner machinegun muzzle position. |
+| MZ2_GUNNER_GRENADE_1 - 4 | Gunner grenade launcher muzzle position. |
+| MZ2_CHICK_ROCKET_1 | Chick rocket launcher muzzle flash. |
+| MZ2_FLYER_BLASTER_1 - 2 | Flyer blaster muzzle flash position. |
+| MZ2_MEDIC_BLASTER_1 - 2 | Medic blaster muzzle flash position. |
+| MZ2_GLADIATOR_RAILGUN_1 | Gladiator railgun muzzle flash. |
+| MZ2_HOVER_BLASTER_1 | Hover blaster muzzle flash. |
+| MZ2_SUPERTANK_MACHINEGUN_1 - 6 | Super tank machinegun muzzle flash position. |
+| MZ2_SUPERTANK_ROCKET_1 - 3 | Super tank rocket launcher muzzle flash position. |
+| MZ2_BOSS2_MACHINEGUN_L1 - L5 | Boss 2 left-side machinegun muzzle flash position. |
+| MZ2_BOSS2_ROCKET_1 - 4 | Boss 2 rocket launcher muzzle flash positions. |
+| MZ2_BOSS2_MACHINEGUN_R1 - R5 | Boss 2 right-side machinegun muzzle flash position. |
+| MZ2_MAKRON_BFG | Makrok BGF muzzle flash. |
+| MZ2_MAKRON_BLASTER_1 - 17 | Makron blaster muzzle flash position. |
+| MZ2_MAKRON_RAILGUN_1 | Makron railgun muzzle flash. |
+| MZ2_JORG_MACHINEGUN_L1 - L6 | Jorg left-side machinegun muzzle flash position. |
+| MZ2_JORG_MACHINEGUN_R1 - R6 | Jorg right-side machinegun muzzle flash position. |
+| MZ2_JORG_BFG_1 | Jorg BFG muzzle flash. |
+| MZ2_CARRIER_MACHINEGUN_L1 - L2 | Carrier left-side machinegun muzzle flash position. |
+| MZ2_CARRIER_MACHINEGUN_R1 - R2 | Carrier right-side machinegun muzzle flash position. |
+| MZ2_CARRIER_GRENADE | Carrier grenade launcher muzzle flash. |
+| MZ2_CARRIER_RAILGUN | Carrier railgun muzzle flash. |
+| MZ2_CARRIER_ROCKET_1 - 4 | Carrier rocket launcher muzzle flash position. |
+| MZ2_WIDOW_DISRUPTOR | Widow disruptor muzzle flash. |
+| MZ2_WIDOW_BLASTER | Widow blaster muzzle flash. |
+| MZ2_WIDOW_RAIL | Widow railgun muzzle flash. |
+| MZ2_WIDOW_PLASMABEAM | Widow plasma beam muzzle flash. |
+| MZ2_WIDOW_RAIL_LEFT | Widow left-side railgun muzzle flash. |
+| MZ2_WIDOW_RAIL_RIGHT | Widow right-side railgun muzzle flash. |
+| MZ2_WIDOW_BLASTER_SWEEP1 - 9 | Widow blaster sweeping muzzle flash position. |
+| MZ2_WIDOW_BLASTER_100 - 0 - 70L | Widow's various blaster positions. |
+| MZ2_WIDOW2_BEAMER_1 - 5 | Widow2 beamer muzzle flash positions. |
+| MZ2_WIDOW2_BEAM_SWEEP_1 - 11 | Widow2 beamer sweeping muzzle flash positions. |
+| ✨🪽 MZ2_SOLDIER_RIPPER_1 - 8 | Soldier ripper muzzle flash positions. |
+| ✨🪽 MZ2_SOLDIER_HYPERGUN_1 - 8 | Soldier hyperblaster muzzle flash positions. |
+| ✨🪽 MZ2_GUARDIAN_BLASTER | PSX Guardian blaster muzzle flash. |
+| ✨🪽 MZ2_ARACHNID_RAIL1 - _UP2 | PSX Arachnid rail muzzle flashes.|
+| ✨🪽 MZ2_INFANTRY_MACHINEGUN_14 - 21 | Infantry run-attack muzzle flash. |
+| ✨🪽 MZ2_GUNCMDR_CHAINGUN_1 - 2 | Gunner commander chaingun muzzle flash position. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_MORTAR_1 - 3 | Gunner commander grenade mortar muzzle flash positions. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_FRONT_1 - 3 | Gunner commander grenade launcher front muzzle flash positions. |
+| ✨🪽 MZ2_GUNCMDR_GRENADE_CROUCH_1 - 3 | Gunner commander grenade launcehr crouching muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_BLASTER_9 | Soldier blaster prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_SHOTGUN_9 | Soldier shotgun prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_MACHINEGUN_9 | Soldier machinegun prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_RIPPER_9 | Soldier ripper prone muzzle flash position. |
+| ✨🪽 MZ2_SOLDIER_HYPERGUN_9 | Soldier hypergun prone muzzle flash position. |
+| ✨🪽 MZ2_GUNNER_GRENADE2_1 - 4 | Alternative firing animation for gunner grenade launcher. |
+| ✨🪽 MZ2_INFANTRY_MACHINEGUN_22 | Alternative firing animation for infantry machinegun. |
+| ✨🪽 MZ2_SUPERTANK_GRENADE_1 - 2 | Supertank grenade launcher muzzle flash position. |
+| ✨🪽 MZ2_HOVER_BLASTER_2 | Hover blaster other side muzzle flash. |
+| ✨🪽 MZ2_DAEDALUS_BLASTER_2 | Daedalus other side blaster muzzle flash. |
+| ✨🪽 MZ2_MEDIC_HYPERBLASTER1_1 - 12 | Medic hyperblaster sweed muzzle flash positions. |
+| ✨🪽 MZ2_MEDIC_HYPERBLASTER2_1 - 12 | Medic commander hyperblaster sweed muzzle flash positions. |
+| ✨🪽 MZ2_LAST | Only used internally for compile-time checks. |
