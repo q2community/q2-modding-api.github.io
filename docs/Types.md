@@ -618,3 +618,75 @@ Monster muzzle effects. In 🍦 these flags are defined as constant values while
 | ✨🪽 MZ2_MEDIC_HYPERBLASTER1_1 - 12 | Medic hyperblaster sweed muzzle flash positions. |
 | ✨🪽 MZ2_MEDIC_HYPERBLASTER2_1 - 12 | Medic commander hyperblaster sweed muzzle flash positions. |
 | ✨🪽 MZ2_LAST | Only used internally for compile-time checks. |
+
+
+## `temp_event_t`
+
+Temporary entity events, enum that defines various temporary, short-lived entity events; usually visual and gameplay feedback such as gunshots, explosions or special effects.
+
+| Member | Description |
+| --- | --- |
+| GUNSHOT | Visual effect for gunshots hitting a surface. |
+| BLOOD | Blood effect when player or a monster is hit. |
+| BLASTER | Projectile effect from a blaster weapon. |
+| RAILTRAIL | Visual effect for railgun trail. |
+| SHOTGUN | Visual effect for shotgun pellet. |
+| EXPLOSION1 | Standard explosion effect type 1. |
+| EXPLOSION2 | Standard explosion effect type 2. |
+| ROCKET_EXPLOSION | Visual effect from rocket explosion. |
+| GRENADE_EXPLOSION | Visual effect for grenade explosion. |
+| SPARKS | Generic spart visual effect. |
+| SPLASH | Water splash visual effect. |
+| BUBBLETRAIL | Bubble trail visual effect for object moving underwater. |
+| SCREEN_SPARKS | Electrical sparks on screen or consoles visual effect. |
+| SHIELD_SPARKS | Sparks generated when a shield absord damage. |
+| BULLET_SPARKS | Sparks generated from bullet hitting metal surfaces. |
+| LASER_SPARKS | Sparks generated from laser impact. |
+| PARASITE_ATTACK | Visual effect for parasite monster attack. |
+| ROCKET_EXPLOSION_WATER | Visual effect for rocket explosion in water. |
+| GRENADE_EXPLOSION_WATER | Visual effect for grenade explosion in water. |
+| MEDIC_CABLE_ATTACK | Visual effect for medic's attack with cables. |
+| BFG_EXPLOSION | Visual effect for BFG explosion. |
+| BFG_BIGEXPLOSION | Larger visual effect for BFG explosion. |
+| BOSSTPORT | Teleportation effect for boss characters. |
+| BFG_LASER | Laser effect from BFG weapon. |
+| GRAPPLE_CABLE | Effect from grappling hook cable. |
+| WELDING_SPARKS | Sparks from welding. |
+| GREENBLOOD | Green blood effect. |
+| 🍦BLUEHYPERBLASTER<br>✨&nbsp;🪽&nbsp;BLUEHYPERBLASTER_DUMMY | Blue hyperblaster effect. ✨🪽 left this for compatibility.  |
+| PLASMA_EXPLOSION | Visual effect for plasma explosion. |
+| TUNNEL_SPARKS | Sparks in tunnels. |
+| BLASTER2 | Alternate blaster effect. |
+| RAILTRAIL2 | Alternate railgun effect. |
+| FLAME | Flame effect. |
+| LIGHTNING | Lightning effect. |
+| DEBUGTRAIL | Debug trail effect. |
+| PLAIN_EXPLOSION | Simple explosion visual effect. |
+| FLASHLIGHT | Flashlight beam visual effect. |
+| FORCEWALL | Visual effect for force walls. |
+| HEATBEAM | Visual effect for heat beam effect from weapon or device. |
+| MONSTER_HEATBEAM | Visual effect from heat beam monster attack. |
+| STEAM | Visual effect for steam from pipes or vents. |
+| BUBBLETRAIL2 | Alternative bubble trail effect. |
+| MOREBLOOD | Enhanced blood visual effects. |
+| HEATBEAM_SPARKS | Visual effect for heat beam sparks. |
+| HEATBEAM_STEAM | Visual effect for heat beam steam. |
+| CHAINFIST_SMOKE | Visual effect for smoke from chainfirst weapon. |
+| ELECTRIC_SPARKS | Visual effect for electric sparks. |
+| TRACKER_EXPLOSION | Visual effect for tracker weapon. |
+| TELEPORT_EFFECT | Visual effect for teleportation. |
+| DBALL_GOAL | Special effect for ball-based gamemode. |
+| WIDOWBEAMOUT | Visual effect for widow beam attack. |
+| NUKEBLAST | Visual effect for nuclear blast. |
+| WIDOWSPLASH | Visual effect for widow splash attack. |
+| EXPLOSION1_BIG | Larger effect for standard explosion. |
+| EXPLOSION1_NP | Non-physics based explosion. |
+| FLECHETTE | Flechette projectile effect. |
+| ✨🪽 BLUEHYPERBLASTER | Replaces the old `BLUEHYPERBLASTER`. |
+| ✨🪽 BFG_ZAP | Laser when an entity has been zapped by a BFG explosion. |
+| ✨🪽 BERSERK_SLAM | Large blue flash & particles at impact point towards a direction.  |
+| ✨🪽 GRAPPLE_CABLE_2 | The grappling hook in Quake II 3.20 used a larger message that didn't allow the cable to render like other player-derived beams. |
+| ✨🪽 POWER_SPLASH | Effect sent when a power shield evaporates. |
+| ✨🪽 LIGHTNING_BEAM | A lightning bolt that originates from the player, like the heat beam. |
+| ✨🪽 EXPLOSION1_NL | Visual effect for explosion that don't include dynamic light. |
+| ✨🪽 EXPLOSION2_NL | Alternative effect for explosion that don't include dynamic light. |
