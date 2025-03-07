@@ -619,7 +619,6 @@ Monster muzzle effects. In 🍦 these flags are defined as constant values while
 | ✨🪽 MZ2_MEDIC_HYPERBLASTER2_1 - 12 | Medic commander hyperblaster sweed muzzle flash positions. |
 | ✨🪽 MZ2_LAST | Only used internally for compile-time checks. |
 
-
 ## `temp_event_t`
 
 Temporary entity events, enum that defines various temporary, short-lived entity events; usually visual and gameplay feedback such as gunshots, explosions or special effects.
@@ -690,3 +689,18 @@ Temporary entity events, enum that defines various temporary, short-lived entity
 | ✨🪽 LIGHTNING_BEAM | A lightning bolt that originates from the player, like the heat beam. |
 | ✨🪽 EXPLOSION1_NL | Visual effect for explosion that don't include dynamic light. |
 | ✨🪽 EXPLOSION2_NL | Alternative effect for explosion that don't include dynamic light. |
+
+## `splash_color_t`
+
+Splash color used to categorize different types of splash effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| UNKNOWN | Default or unknown splash type; same as zero. |
+| SPARKS | Creates sparks instead of liquid splash. |
+| BLUE_WATER | Represents splash effect in blue water. |
+| BROWN_WATER | Represents splash in muddy or dirty water. |
+| SLIME | Represents splash effect of green or toxic slime. |
+| LAVA | Represent splash of lava. |
+| BLOOD | Represents splash of blood. |
+| ✨🪽 ELECTRIC | Electric sparks that zaps. Used in N64. |
