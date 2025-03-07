@@ -704,3 +704,22 @@ Splash color used to categorize different types of splash effects. In 🍦 these
 | LAVA | Represent splash of lava. |
 | BLOOD | Represents splash of blood. |
 | ✨🪽 ELECTRIC | Electric sparks that zaps. Used in N64. |
+
+## `soundchan_t`
+
+Sound channel used to assign autio to different channel. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| AUTO | Default channel; does not override any sound. |
+| WEAPON | Used for weapon sounds. |
+| VOICE | UIsed for player and monster sounds. |
+| ITEM | Used for item interaction sounds. |
+| BODY | Used for body-related sounds like footsteps, pain and grunts. |
+| ✨🪽 AUX | |
+| ✨🪽 FOOTSTEP | |
+| ✨🪽 AUX3 | |
+| NO_PHS_ADD | Bitwise modifier flag; tells the sound to be sent to all clients not just the one in potential hearing set. |
+| RELIABLE | Bitwise modifier flag; tells the sound to be sent using a reliable message ensuring it will not be lost. |
+| ✨🪽 FORCE_POS | Bitwise modifier flag; Forced the sound position in the packet to be used. |
+
