@@ -734,3 +734,14 @@ Attenuation detemines how sound volume decrease with distance to the sound. Thes
 | NORM | Normal auttenuation; sound diminishes over distance. |
 | IDLE | Higher attenuation; sound fades more quickly. |
 | STATIC | Very rapid attenuation; sound fades quickly when moving away from the source. |
+
+## ✨🪽 `game_style_t`
+
+Enumeration describing different game styles.
+
+| Member | Description |
+| --- | --- |
+| PVE | Player versus environment mode. |
+| FFA | Free for all mode. |
+| TDM | Team deathmatch mode. |
+
