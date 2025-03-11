@@ -789,3 +789,44 @@ Entity events related to in-game entities, represents effects that occur relativ
 | OTHER_TELEPORT | Similar to `PLAYER_TELEPORT` but for other entities. |
 | ✨🪽 OTHER_FOOTSTEP | Similar to `FOOTSTEP` but for other entities. |
 | ✨🪽 LADDER_STEP | Ladder climbing footstep event. |
+
+## 🍦 `svc_ops_e`<br/>✨🪽 `server_command_t`
+
+Definition of server commands. These messages help synchronize the game state between the server and client.
+
+| Member | Description |
+| --- | --- |
+| bad | Invalid or unknown server command. |
+| muzzleflash | Triggers a visual effect for a weapon firing, used for player weapons. |
+| muzzleflash2 | Similar to `muzzleflash` but for non player entities. |
+| temp_entity | Creates temporary entities such as explosion, blood splashes and other short-lived effects. |
+| layout | Updates the HUD layout. |
+| inventory | Updates the player's inventory items and ammo counts. |
+| nop | No operation; used as a placeholder or for keeping connection alive. |
+| disconnect | Signals that a client disconnected from the server. |
+| reconnect | Notifies the client that it should reconnect to the server. |
+| sound | Sends a sound effect to be played at a specific location. |
+| print | Sends a text message to the client console. |
+| stufftext | Sends a command string to be executed in the client's console. |
+| serverdata | Provides the initial server information such as protocol version map name and max player count. |
+| configstring | Sends configuration data from the server to the client. |
+| spawnbaseline | Sends baseline entity data. |
+| centerprint | Displays a message in the center of the screen. |
+| download | Transfer files from the server to the client, used for downloading missing assets. |
+| playerinfo | Updates player state information such as position, angles and animation frames. |
+| packetentities | Sends a full list of entities and their states for a given frame. |
+| deltapacketentities | Sends full list of entity changes since the last frame. |
+| frame | Synchronizes the client with the server's game state. |
+| ✨🪽 splitclient | Indicates to the client which split screen player the next messages are directed towards. |
+| ✨🪽 configblast | Compressed configstring data. |
+| ✨🪽 spawnbaselineblast | Compressed baseline data. |
+| ✨🪽 level_restart | Sent when the server executes a `restart_level` command. |
+| ✨🪽 damage | Sent after accumulating damage on a player. |
+| ✨🪽 locprint | New entrypoint for prints. |
+| ✨🪽 fog | [Fog data; see svc_fog_data_t](Types#svc_fog_data_t). |
+| ✨🪽 waitingforplayers | Sent when there are players waiting to join before the game can start. |
+| ✨🪽 bot_chat | Bots talking to players. |
+| ✨🪽 poi | Spawn a POI. |
+| ✨🪽 help_path | Spawns the compass help path effect at the given location. |
+| ✨🪽 muzzleflash3 | Alternative muzzleflash. |
+| ✨🪽 achievement | Triggers achievement. |
