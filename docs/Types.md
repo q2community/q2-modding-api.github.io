@@ -772,3 +772,20 @@ Config strings are used to send game data from the server to all clients. These 
 | ✨🪽 WHEEL_POWERUPS | Powerup entries for the powerup wheel. |
 | ✨🪽 CD_LOOP_COUNT | Integer that defines how many times to loop the music before switching to ambient track. |
 | ✨🪽 GAME_STYLE | [Game style; see game_style_t](Types#game_style_t). |
+
+## `entity_event_t`
+
+Entity events related to in-game entities, represents effects that occur relative to an entity's position.
+
+| Member | Description |
+| --- | --- |
+| NONE | No event; represents default as zero. |
+| ITEM_RESPAWN | Triggers when an item respawns. |
+| FOOTSTEP | Indicates that a player has taken a step. |
+| FALLSHORT | Represents a short fall that doesn't cause damage but triggers a landing sound. |
+| FALL | Represents a moderate fall that may cause damage and plays a landing sound. |
+| FALLFAR | Renresents a long fall that can cause significant damage or death. |
+| PLAYER_TELEPORT | Occurs when a player teleports; triggers visual and sound effect. |
+| OTHER_TELEPORT | Similar to `PLAYER_TELEPORT` but for other entities. |
+| ✨🪽 OTHER_FOOTSTEP | Similar to `FOOTSTEP` but for other entities. |
+| ✨🪽 LADDER_STEP | Ladder climbing footstep event. |
