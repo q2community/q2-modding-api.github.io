@@ -745,3 +745,30 @@ Enumeration describing different game styles.
 | FFA | Free for all mode. |
 | TDM | Team deathmatch mode. |
 
+## Config Strings
+
+Config strings are used to send game data from the server to all clients. These strings can store information such about map settings, models, sounds and player skins.
+
+| Member | Description |
+| --- | --- |
+| NAME | Server name. |
+| CDTRACK | Background music CD track to play. |
+| SKY | Name of the skybox texture used in the map. |
+| SKYAXIS | Rotation axis of the skybox. |
+| SKYROTATE | Rotation speed of the skybox. |
+| STATUSBAR | Status bar layout, used to display HUD elements. |
+| AIRACCEL | Controls air acceleration. |
+| MAXCLIENTS | Maximum number of players allowed on the server. |
+| MODELS | Start index for the model filenames. |
+| SOUNDS | Start index for the sound filenames. |
+| IMAGES | Start index for the image filenames. |
+| LIGHTS | Start index for the light defintions. |
+| ✨🪽 SHADOWLIGHTS | Shadow light entries. |
+| ITEMS | Start index for the item definitions. |
+| PLAYERSKINS | Start index for the player skins. |
+| GENERAL | Start index for general configuration strings. |
+| ✨🪽 WHEEL_WEAPONS | Weapon entries for the weapon wheel. |
+| ✨🪽 WHEEL_AMMO | Weapon ammo types entries for the weapon wheel. |
+| ✨🪽 WHEEL_POWERUPS | Powerup entries for the powerup wheel. |
+| ✨🪽 CD_LOOP_COUNT | Integer that defines how many times to loop the music before switching to ambient track. |
+| ✨🪽 GAME_STYLE | [Game style; see game_style_t](Types#game_style_t). |
