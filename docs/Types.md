@@ -723,3 +723,14 @@ Sound channel used to assign autio to different channel. In 🍦 these flags are
 | RELIABLE | Bitwise modifier flag; tells the sound to be sent using a reliable message ensuring it will not be lost. |
 | ✨🪽 FORCE_POS | Bitwise modifier flag; Forced the sound position in the packet to be used. |
 
+## Sound Attenuation
+
+Attenuation detemines how sound volume decrease with distance to the sound. These are defined as constant values.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 LOOP_NONE | Full volume over entire level; only used for looping sounds. |
+| NONE | Sound plays at full volume over the entire level. |
+| NORM | Normal auttenuation; sound diminishes over distance. |
+| IDLE | Higher attenuation; sound fades more quickly. |
+| STATIC | Very rapid attenuation; sound fades quickly when moving away from the source. |
