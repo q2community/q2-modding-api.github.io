@@ -830,3 +830,50 @@ Definition of server commands. These messages help synchronize the game state be
 | ✨🪽 help_path | Spawns the compass help path effect at the given location. |
 | ✨🪽 muzzleflash3 | Alternative muzzleflash. |
 | ✨🪽 achievement | Triggers achievement. |
+
+## ✨🪽 `svc_fog_data_t`
+
+This is data used to define fog used in a [fog server command; see server_command](Types#server_command_t).
+
+| Member | Description |
+| --- | --- |
+| bits | [Bits; see bits_t](Types#svc_fog_data_t#bits_t). |
+| density | Fog density; taken from `BIT_DENSITY` flag from `bits`. |
+| skyfactor | Fog sky factor; taken from `BIT_DENSITY` flag from `bits`. |
+| red | Fog red channel; taken from `BIT_R` flag from `bits`. |
+| green | Fog green channel; taken from `BIT_G` flag from `bits`. |
+| blue | Fog blue channel; taken from `BIT_B` flag from `bits`. |
+| time | Fog transition time in milliseconds; taken from `BIT_TIME` flag from `bits`. |
+| hf_falloff | Heightfog falloff; taken from `BIT_HEIGHTFOG_FALLOFF` flag from `bits`. |
+| hf_density | Heightfog density; taken from `BIT_HEIGHTFOG_DENSITY` flag from `bits`. |
+| hf_start_r | Heightfog start red channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_start_g | Heightfog start green channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_start_b | Heightfog start blue channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`.  |
+| hf_start_dist | Heightfog start distance; taken from `BIT_HEIGHTFOG_START_DIST` and `BIT_MORE_BITS` flag from `bits`.  |
+| hf_end_r | Heightfog end red channel; taken from `BIT_HEIGHTFOG_END_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_g | Heightfog end green channel; taken from `BIT_HEIGHTFOG_END_G` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_b | Heightfog end blue channel; taken from `BIT_HEIGHTFOG_END_B` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_dist | Heightfog end distance; taken from `BIT_HEIGHTFOG_END_DIST` and `BIT_MORE_BITS` flag from `bits`. |
+
+### `bits_t`
+
+Bitflags to define the contents of [fog server data; see svc_fog_data_t](Types#svc_fog_data_t).
+
+| Member | Description |
+| --- | --- |
+| BIT_DENSITY | Fog density. |
+| BIT_R | Fog red channel. |
+| BIT_G | Fog green channel. |
+| BIT_B | Fog blue channel. |
+| BIT_TIME | Fog transition time in milliseconds. |
+| BIT_HEIGHTFOG_FALLOFF | Heightfog falloff. |
+| BIT_HEIGHTFOG_DENSITY | Heightfog density. |
+| BIT_MORE_BITS | If additional bits are included in the message. |
+| BIT_HEIGHTFOG_START_R | Heightfog start red channel. |
+| BIT_HEIGHTFOG_START_G | Heightfog start green channel. |
+| BIT_HEIGHTFOG_START_B | Heightfog start blue channel. |
+| BIT_HEIGHTFOG_START_DIST | Heightfog start distance. |
+| BIT_HEIGHTFOG_END_R | Heightfog end red channel. |
+| BIT_HEIGHTFOG_END_G | Heightfog end green channel. |
+| BIT_HEIGHTFOG_END_B | Heightfog end blue channel. |
+| BIT_HEIGHTFOG_END_DIST | Heightfog end distance. |
