@@ -837,7 +837,7 @@ This is data used to define fog used in a [fog server command; see server_comman
 
 | Member | Description |
 | --- | --- |
-| bits | [Bits; see bits_t](Types#svc_fog_data_t#bits_t). |
+| bits | [Bits; see bits_t](Types#bits_t). |
 | density | Fog density; taken from `BIT_DENSITY` flag from `bits`. |
 | skyfactor | Fog sky factor; taken from `BIT_DENSITY` flag from `bits`. |
 | red | Fog red channel; taken from `BIT_R` flag from `bits`. |
@@ -877,3 +877,23 @@ Bitflags to define the contents of [fog server data; see svc_fog_data_t](Types#s
 | BIT_HEIGHTFOG_END_G | Heightfog end green channel. |
 | BIT_HEIGHTFOG_END_B | Heightfog end blue channel. |
 | BIT_HEIGHTFOG_END_DIST | Heightfog end distance. |
+
+## `svflags_t`
+
+Server side flags that determines how entities behave and interact with the game world. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; the same as zero.|
+| NOCLIENT | Prevents the entity from being sent to clients, makes it invisible even if it has effects. |
+| DEADMONSTER | Marks the entity as a dead monster. |
+| MONSTER | Marks the entity as a monster. |
+| ✨🪽 PLAYER | Causes the entity to be treated as `CONTENTS_PLAYER`. |
+| ✨🪽 BOT | Marks the entity as a bot. |
+| ✨🪽 NOBOTS | Tells the bot subsystem to ignore this entity. |
+| ✨🪽 RESPAWNING | This flag hints to the bot subsystem about items respawning. |
+| ✨🪽 PROJECTILE | Treats the entity as `CONTENTS_PROJECTILE` for collision. |
+| ✨🪽 INSTANCED | This flag marks the entity as being instanced. |
+| ✨🪽 DOOR | This flag informs the bot subsystem that the entity is a door. |
+| ✨🪽 NOCULL | This flag overrides the client frame building culling routines causing entity to always be sent. |
+| ✨🪽 HULL | This flag adjusts the servers method of clipping movement to entities. |
