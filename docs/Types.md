@@ -897,3 +897,27 @@ Server side flags that determines how entities behave and interact with the game
 | ✨🪽 DOOR | This flag informs the bot subsystem that the entity is a door. |
 | ✨🪽 NOCULL | This flag overrides the client frame building culling routines causing entity to always be sent. |
 | ✨🪽 HULL | This flag adjusts the servers method of clipping movement to entities. |
+
+## `solid_t`
+
+Solid types for game entities.
+
+| Member | Description |
+| --- | --- |
+| NOT | The entity has no collision. |
+| TRIGGER | The entity only detects touch when something moves inside it. |
+| BBOX | The entity has a bounding box for collision detection. |
+| BSP | The entity uses BSP collision. |
+
+## `layout_flags_t`
+
+New layout flags type (added in ✨🪽) that is used to give names to the different layout types that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name. These are bitflags meaning multiple values can be active at once.
+
+| Value | Member | Description |
+| --- | --- | --- |
+| 0 | LAYOUT | Layout is active. |
+| 1 | INVENTORY | Inventory is active. |
+| 2 | HIDE_HUD | Hide the entire hud. |
+| 3 | INTERMISSION | Intermission is being drawn; collapse splitscreen into a single screen. |
+| 4 | HELP | Help screen is active. |
+| 5 | HIDE_CROSSHAIR | Hide crosshair only. |
