@@ -71,9 +71,9 @@ The entity state stores the data that is used for transmission to the client. It
 | skinnum | Index of skin used for models. It is sometimes overloaded for other purposes. |
 | effects | Bit flags of effects on this entity. See [effects_t](Types#effects_t). |
 | renderfx | Bit flags of rendering effects on this entity. See [renderfx_t](Types#renderfx_t). |
-| solid | Packed solidity data. This is managed automatically by the server, do not touch! |
+| solid | Packed solidity data. This is managed automatically by the server, do not touch! See [solid_t](Types#solid_t). |
 | sound | [Sound index](sound-index) - looped sound that plays from this entity. |
-| event | Event index; events are played once when set and the client receives it, and is reset to zero at the start of every frame. |
+| event | Event index; events are played once when set and the client receives it, and is reset to zero at the start of every frame. See [entity_event_t](Types#entity_event_t). |
 | ✨🪽 alpha | Alpha scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
 | ✨🪽 scale | Entity scale scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
 | ✨ instance_bits | For split-screen players, this controls the visibility of an entity for each split screen player. Managed by the server code, do not touch. |
@@ -387,6 +387,15 @@ Refresh definition flags that affect the entire scene. They are defined as bitfl
 | UVGOGGLES | Ultraviolet goggles effect. Unused. |
 | ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
 
+## ✨🪽 `touch_list_t`
+
+Touch list collection of touches that occurs during movement. Each trace in the collection refers to a box or point that has been collided with.
+
+| Member | Description |
+| --- | --- |
+| num | The number of collision traces currently stored within the list. |
+| traces | A fixed size array of [traces; see trace_t](Types#trace_t). |
+
 ## `pmove_t`
 
 Player movement state, used for player movement and collision detection. This type contains the player's current movement state, input commands and movement results.
@@ -549,7 +558,7 @@ Player muzzle effects. In 🍦 these flags are defined as constant values while 
 | NUKE4 | Nuclear weapon; stage 4 explosion flash. |
 | NUKE8 | Nuclear weapon; stage 8 explosion flash. |
 
-## `monster_muzzleflash_id_t`
+## 🍦✨`monster_muzzleflash_id_t` <br/> 🪽`monster_muzzle_t`
 
 Monster muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
 
