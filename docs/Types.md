@@ -2,46 +2,6 @@
 
 This page goes through the most common Quake II-specific types you'll come across in Quake II modding, and explains their purpose & how to manipulate them. This will cover the mathematical & engine-shared types first, and only briefly go into detail on specific types that are used in the vanilla Quake II mod experience.
 
-## `vec3_t`
-
-A 3d vector; it might represent a position, a unit vector, a vector * magnitude, or even Euler angles. There are several global functions to manipulate them - most of them have `vec` in their name somewhere (✨🪽 and member functions of vec3_t, which is where most of the globals were moved to).
-
-🍦 Be careful when passing vectors as parameters, as the type is a simple typedef to a C array, and these have weird semantics.
-
-## 🍦 `qboolean`
-
-Quake II's initial source was written pre-C99 and didn't have a native boolean type. As a result, it uses a custom enum named `qboolean` with `false` and `true` values. In re-release, this was changed to the canonical `bool` type (which, in C, matches `stdbool.h`'s `_Bool`).
-
-## time
-
-Time in Quake II is represented as a number that is kept track of on the game side. The game [runs a level tick](Level-Lifecycle.md) which increases the current time of the level, and this value persists separately on levels (every new level always starts at a time of zero).
-
-🍦 Times are represented as `float` **seconds** in most cases, and in a few other cases they are stored as `int` **frames**. A frame in Quake II is 100 milliseconds (10hz). The `FRAMETIME` macro contains the number of seconds in a frame (0.1) which can be used to convert to other units.
-
-✨🪽 Times are represented as `int64` and stored in the `gtime_t` type. It contains several functions to create times from different units, as well as converting those times back into different components. (✨ You can also use the `_ms`, `_sec`, etc literal postfixes to easily create constants of units of time.) The game imports some useful constants from the server for timing, such as [`frame_time_s`](Server-Imports#frame_time_s) and [`frame_time_ms`](Server-Imports#frame_time_ms), to use for calculations.
-
-## `print_type_t`
-
-A print priority level, that tells the client how important the message is and whether it should be filtered or not.
-
-In most engines, the `msg` userinfo cvar can be used to filter out certain types of messages that you don't want to receive.
-
-🍦✨ The enum constants are globals prefixed with the string `PRINT_` to prevent name clashes.
-
-✨🪽 There are also bitflags that can be mixed with any level type.
-
-| Member | Description |
-| --- | --- |
-| LOW | Low priority messages, such as pickups. |
-| MEDIUM | Medium priority messages, such as death messages. |
-| HIGH | High priority messages; anything that is more important than the other two. |
-| CHAT | A chat message. This message is also green and makes a specific sound on the client when displayed. |
-| ✨🪽 TYPEWRITER | The message is displayed in the center of the screen, one character at a time like a typewriter. This is used for level goals in the re-release. |
-| ✨🪽 CENTER | The message is displayed in the center of the screen all at once. |
-| ✨🪽 TTS | Like `HIGH`, but will be spoken audibly if the engine supports text-to-speech. |
-| ✨🪽 BROADCAST | Bitflag that can be mixed with any of the above types. If set, `Loc_Print` will deliver this message to all clients. |
-| ✨🪽 NO_NOTIFY | Bitflag that can be mixed with any of the above types. If set, clients will only display this message in the console and not on the notification bar. |
-
 ## `area_solidity_t`
 
 The type of area you want to grab from a call to [BoxEdicts](Server-Imports#BoxEdicts).
@@ -53,114 +13,47 @@ The type of area you want to grab from a call to [BoxEdicts](Server-Imports#BoxE
 | SOLID | Includes any entity that is `SOLID_BBOX` or `SOLID_BSP`. |
 | TRIGGER | Includes any entity that is `SOLID_TRIGGER`. |
 
-## `entity_state_t`
+## `button_t`
 
-The entity state stores the data that is used for transmission to the client. It basically describes everything the client needs to render a given entity, as well as some other data that the server uses for things like collision.
-
-| Member | Description |
-| --- | --- |
-| number | The numeric index of this entity. This should never be touched. |
-| origin | The entity's position in the world. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
-| angles | The entity's Euler angles. [Changing this may require re-linking the entity if it is a brush model.](Entity-Lifecycle#linking) |
-| old_origin | The entity's previous in the world. This is mainly used for interpolating entities on the client side, but some types of entities (like `RF_BEAM`) will use this for a secondary position. |
-| modelindex | [Model index](model-index) |
-| modelindex2 | Secondary [model index](model-index) |
-| modelindex3 | Third [model index](model-index) |
-| modelindex4 | Fourth [model index](model-index) |
-| frame | Index of frame used for animating sprites, brush model textures or models. It is sometimes also used to represent colors (like four palette indices for `RF_BEAM`) or overloaded for other purposes. |
-| skinnum | Index of skin used for models. It is sometimes overloaded for other purposes. |
-| effects | Bit flags of effects on this entity. See [effects_t](Types#effects_t). |
-| renderfx | Bit flags of rendering effects on this entity. See [renderfx_t](Types#renderfx_t). |
-| solid | Packed solidity data. This is managed automatically by the server, do not touch! See [solid_t](Types#solid_t). |
-| sound | [Sound index](sound-index) - looped sound that plays from this entity. |
-| event | Event index; events are played once when set and the client receives it, and is reset to zero at the start of every frame. See [entity_event_t](Types#entity_event_t). |
-| ✨🪽 alpha | Alpha scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
-| ✨🪽 scale | Entity scale scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
-| ✨ instance_bits | For split-screen players, this controls the visibility of an entity for each split screen player. Managed by the server code, do not touch. |
-| ✨🪽 loop_volume | Volume for looped sounds. For backwards compatibility, `0.0` will equal `1.0`. Note that as of Update 1, this field does not work correctly on the client side. |
-| ✨&nbsp;🪽&nbsp;loop_attenuation | Volume for looped sounds. For backwards compatibility, `0.0` will equal `3.0`. A value of `-1` indicates no attenuation. |
-| ✨ owner | Entity owner index; this is used to allow client prediction to properly handle collisions against solid entities that "own" us (such as teslas). It is automatically managed by the server; do not touch. |
-| ✨🪽 old_frame | When `RF_OLD_FRAME_LERP` is set on `renderfx`, this value is transmitted over the network and forces interpolation from this frame to the current frame. It is useful when you wish to smooth a transition from an animation that might have ugly interpolation artifacts (like the Enforcer's head being shot off). |
-
-## `edict_t`
-
-Stores the data that is transmitted between the server & client, as well as various bits of data that the server uses for things like collision. (🍦✨ This struct is also where you add new members that you can use for whatever purpose on entities.)
+Button bits that is used to represent button states for a client. They are defined as bitflags meaning one `button_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
 
 | Member | Description |
 | --- | --- |
-| s | [Entity state; see entity_state_t](Types#entity_state_t) |
-| client | [Pointer to client struct; see gclient_t](Types#gclient_t) |
-| ✨🪽 sv | [State data for bots; see sv_entity_t](Types#sv_entity_t) |
-| inuse | Whether the entity is currently active or not. See [Entity Lifecycle](entity-lifecycle). |
-| 🍦 area | Pointers to other entities that are linked into the same world area. This is read-only; modifying this will have negative consequences. To check if an entity is linked into the world, check if prev or next is non-null. See [Entity Lifecycle](entity-lifecycle). |
-| ✨🪽 linked | Whether the entity is currently linked into the world. See [Entity Lifecycle](entity-lifecycle). |
-| linkcount | A running tally on how many times this entity has been linked. This can be useful to tell if an entity has been moved by something else, in which case you may want to run additional checks (for instance, to check if you've been moved by a platform), by comparing it against a previously-known value. |
-| 🍦&nbsp;num_clusters | The number of clusters we are linked into. Read-only, not useful to the game code. |
-| 🍦&nbsp;clusternums | The clusters we are linked into. Read-only, not useful to the game code. |
-| 🍦&nbsp;headnode | The headnode we are linked into, if we overrun the cluster count. Read-only, not useful to the game code. |
-| areanum, areanum2 | The current areas this entity is linked into. Entities can be linked into two areas, if they are straggling a water brush or standing inside of a door for instance. See [Areas](Areas). (🍦 this is different/unrelated to the `area` member) |
-| svflags | A bit set of flags the server & game use for various things. See [svflags_t](Types#svflags_t) |
-| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
-| absmin, absmax | The entity's absolute box in the world, expanded by 1 on each axis. This is the same as (origin + mins) - { 1, 1, 1 } and (origins + maxs) + { 1, 1, 1 } respectively, *except* for brush models where this value may also be expanded to include rotation. This is read-only. |
-| size | The entity's size (mins + maxs). This is read-only. |
-| solid | The entity's solidity type. `TRIGGER` and `BBOX` are both usable by any entity, and simply link the entity into either trigger or solid area links, respectively. The `BSP` value can only be used on brush models (entities whose modelindex points to an inline BSP model, such as `*2`). [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
-| clipmask | The entity's content mask. The server does not use this field, it is only in this part of the structure for historical reasons. Physics routines of the game use this to control which entities this entity will touch when moving. |
-| owner | The entity that owns this entity. When non-null, traces that have an `ignore` field will also ignore the owner (or ownee); for instance, shots fired from your own weapon are owned by you and ignore their owner when they move, which allows them to pass through you and vice versa. |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| ATTACK |The fire/attack button is pressed. |
+| USE | The use/interaction button is pressed. |
+| ✨🪽 HOLSTER | Corresponds to new `+holster` command. |
+| ✨🪽 JUMP | The jump button is pressed; replaces the `usercmd_t::upmove`.  |
+| ✨🪽 CROUCH | The crouch button is pressed; replaces the `usercmd_t::upmove`. |
+| ANY | Any button is pressed; used for general input detection. |
 
-## `player_state_t`
+## Config Strings
 
-Stores the information needed for the client to render a view.
+Config strings are used to send game data from the server to all clients. These strings can store information such about map settings, models, sounds and player skins.
 
 | Member | Description |
 | --- | --- |
-| pmove | [Player movement state; see pmove_state_t](Types#pmove_state_t) |
-| viewangles | 3D vector representing the player's view in Euler angles. |
-| viewoffset | 3D vector representing an offset for the player's view. Used to add bob and other effects. |
-| kick_angles | 3D vector the holds values for weapon kick angles used when calculating the view offset. |
-| gunangles | 3D vector representing the angle of the gun the player is holding. Used to rotate the gun when moving and bobbing. |
-| gunoffset | 3D vector representing an offset for the player's gun.  |
-| gunindex | Index to the gun model being used. |
-| ✨🪽 gunskin | Skin number used on the weapon. |
-| gunframe | Frame index to current animation for the player's gun. |
-| ✨🪽 gunrate | The gun framerate specified in hz. A value of 0 is equivalent of 10hz for backwards compatability. This is used to speed up framerate in case of powerups like haste. |
-| 🍦&nbsp;blend<br>✨&nbsp;🪽&nbsp;screen_blend | Full-screen color change value, used for screen flashing. |
-| ✨&nbsp;🪽&nbsp;damage_blend| New type of blend that only occurs around the edge of the screen; many effects are now using this rather than full-screen blend, for epilepsy reasons. |
-| fov | Player's horizontal field of view. |
-| rdflags | Flags attached to the player's refdef (refresh definition) that affect the entire scene. See [Player movement state; see refdef_flags_t](Types#refdef_flags_t) |
-| stats | Values used for status bar updates; this is an array of 32 (✨🪽 64) `short`s transmitted to the client, which is then used by [the HUD layout string](HUD Layout) for rendering the HUD and other layouts |
-| ✨🪽 team_id | Used for team-oriented gamemode to specify the player's team. |
-
-## `cvar_flags_t`
-
-Flags used to define different cvar behaviours. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-🍦✨ The enum constants are globals prefixed with the string `CVAR_` to prevent name clashes.
-
-| Flag Name | Description |
-| --- | --- |
-| ✨🪽 NOFLAGS | Representation for no flags; the same as zero. |
-| ARCHIVE | Causes the cvar to be saved to the config file. |
-| USERINFO | Sends the cvar value to the server as part of the player's userinfo (name, model, skin, etc). |
-| SERVERINFO | Sends the cvar value to the client as part of server's info (game rules, max players, etc). |
-| NOSET | Prevents the cvar to be changed from the console at all, but can still be modified from the command line. |
-| LATCH | Prevents the cvar from taking effect immediately instead the value is latchedand applied after a map change or game restart. |
-| ✨&nbsp;🪽&nbsp;USER_PROFILE | New flag that is only for the client/cgame; it indicates that a cvar is treated like userinfo, but not synced with the server. This is to allow cloud saved client-side config values that aren't part of userinfo. |
-
-## `cvar_t`
-
-Representation of a console variable. These are variables that is reachable through the in-game console and can be used to store, retrieve and modify engine, gameplay and user settings at runtime.
-
-| Member | Description |
-| --- | --- |
-| name | Name of the cvar. |
-| string<br>🪽 stringval | String representation of the cvar's value.<br/>(🪽⚠️ This creates a copy of the string, and **will** be expensive if called every frame. The value of the string should be cached, and `modified_count` used to see if it is modified from its old value.) |
-| latched_string<br>🪽 latched_stringval| Used for latched values (Changes that take effect after restart).<br/>(🪽⚠️ This creates a copy of the string, and **will** be expensive if called every frame. The value of the string should be cached, and `modified_count` used to see if it is modified from its old value.) |
-| flags | [Cvar flags; see cvar_flags_t](Types#cvar_flags_t)  |
-| 🍦&nbsp;modified<br>✨&nbsp;🪽&nbsp;modified_count | 🍦boolean representing if this cvar has been changed or not.<br/>✨🪽 An integer that counts the number of times modified instead. This value will never be zero, which allows you to always check if the cvar has been modified even in its default state. |
-| value | Floating point representation of the cvar's value. |
-| ✨🪽 integer | Integral representation of the cvar's value. |
-| 🪽 boolean | Property that returns true if the cvar is non-zero. |
-| 🍦✨ next | Linked list pointer to the next cvar. This is internal; do not touch. |
+| NAME | Server name. |
+| CDTRACK | Background music CD track to play. |
+| SKY | Name of the skybox texture used in the map. |
+| SKYAXIS | Rotation axis of the skybox. |
+| SKYROTATE | Rotation speed of the skybox. |
+| STATUSBAR | Status bar layout, used to display HUD elements. |
+| AIRACCEL | Controls air acceleration. |
+| MAXCLIENTS | Maximum number of players allowed on the server. |
+| MODELS | Start index for the model filenames. |
+| SOUNDS | Start index for the sound filenames. |
+| IMAGES | Start index for the image filenames. |
+| LIGHTS | Start index for the light defintions. |
+| ✨🪽 SHADOWLIGHTS | Shadow light entries. |
+| ITEMS | Start index for the item definitions. |
+| PLAYERSKINS | Start index for the player skins. |
+| GENERAL | Start index for general configuration strings. |
+| ✨🪽 WHEEL_WEAPONS | Weapon entries for the weapon wheel. |
+| ✨🪽 WHEEL_AMMO | Weapon ammo types entries for the weapon wheel. |
+| ✨🪽 WHEEL_POWERUPS | Powerup entries for the powerup wheel. |
+| ✨🪽 CD_LOOP_COUNT | Integer that defines how many times to loop the music before switching to ambient track. |
+| ✨🪽 GAME_STYLE | [Game style; see game_style_t](Types#game_style_t). |
 
 ## `contents_t`
 
@@ -222,28 +115,6 @@ There are also several built-in `MASK`s, which provide simple masks that are use
 | ✨🪽 MASK_WALK_NAV_SOLID | Used by bot code; things the bots consider navigation-walkable (`SOLID`, `PLAYERCLIP`, `WINDOW`, `MONSTERCLIP`) |
 | ✨🪽 MASK_PROJECTILE | Used by projectiles for what contents they can collide with (`MASK_SHOT` and `PROJECTILECLIP`) |
 
-## `surfflags_t`
-
-Surface flags are used to determine properties for materials and textures applied to brushes. These flags controls lighting, physics, rendering effects and texture behaviour. They are defined as bitflags meaning a surface can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-🍦✨ The enum constants are globals prefixed with the string `SURF_` to prevent name clashes.
-
-| Member | Description |
-| --- | --- |
-|LIGHT | Light surface; indicates that this surface will emit light. |
-| SLICK | Slippery surface; its only use in the base game is to have players be frictionless on them. |
-| SKY | Sky surface; marks the surface as sky. |
-| WARP | Warped surface; makes the texture distort dynamically, used for water, lava and other fluid surfaces. |
-| TRANS33 | 33% transparent surface. |
-| TRANS66 | 66% transparent surface. |
-| FLOWING | Flowing surface; Causes the texture to scroll in a specific direction (determined by the brush's angle). Used for water current, lava flows and conveyor belts. |  
-| NODRAW | Flag used when the surface should never be drawn. Used for invisible collision brushes. |
-| ✨🪽 ALPHATEST | Enable alpha testing (on/off transparency) for the surface. |
-| ✨🪽 N64_UV | Halves the texture size (Specific to N64). |
-| ✨🪽 N64_SCROLL_X | Causes textures to scroll in the X axis (Specific to N64).  |
-| ✨🪽 N64_SCROLL_Y | Causes textures to scroll in the Y axis (Specific to N64). |
-| ✨🪽 N64_SCROLL_FLIP | Flips the scrolling axis (Specific to N64). |
-
 ## `cplane_t`
 
 Collision plane which is fundamental to collision detection. Defines boundaries for brushes, clipping volumes and BSP nodes.
@@ -268,166 +139,62 @@ Surface definition, stores surface properties used for rendering, collision dete
 | ✨🪽 id | Used by the client to index footstep sounds, offset by 1 if non-`null`, otherwise it's zero. |
 | ✨🪽 material | Material name for this texinfo; this is defined by the `.mat` file attached to a particular texture. |
 
-## `trace_t`
+## `cvar_t`
 
-This struct is returned by value by the trace functions ([gi.trace](Server-Imports#trace)), and contains information about a box or point that is sweeped through the BSP and through entities.
-
-| Member | Description |
-| --- | --- |
-| allsolid | If the trace is completely inside of a brush with the input content `mask`, this will be true.  |
-| startsolid | If the trace started inside of a brush with the input content `mask` but was able to escape, this will be true (usually for partially-occluded collisions). |
-| fraction | How far the trace moved between `start` and `end` of the trace before hitting something, as a fraction between `0.0` and `1.0`. If the value is `1.0`, nothing was hit (`endpos` will equal `end`). If the value is `0.0`, something was hit immediately (`endpos` will equal `start`). Any other value is interpolated between the two positions by this value. |
-| endpos | The final position where the trace stopped. |
-| plane | The surface normal at impact. |
-| surface | The surface that was hit. ✨🪽 This value will never be `null`. |
-| contents | The content flags of the brush that was hit; [Content flags; see contents_t](Types#contents_t) |
-| ent | The entity that was hit (if there was one). This is very rarely (if ever) `null`, and will instead point to the `world` if nothing was hit. |
-| ✨🪽 plane2 | When a trace impacts multiple places at destination the collision system will now require both of them; this is the 'second best' plane. |
-| ✨🪽 surface2 | The second best surface hit. Will be `null` if a second surface was not hit. |
-
-## `pmtype_t`
-
-Defines different types of player movement states for the client-side movement prediction.
+Representation of a console variable. These are variables that is reachable through the in-game console and can be used to store, retrieve and modify engine, gameplay and user settings at runtime.
 
 | Member | Description |
 | --- | --- |
-| NORMAL | Standard player movement. |
-| ✨🪽 GRAPPLE | Used for grappling hook, not affected by gravity and is instead pulled towards `velocity`. |
-| ✨🪽 NOCLIP | No clipping against anything; flying physics. This is what `SPECTATOR` represents in 🍦. |
-| SPECTATOR | 🍦 No clipping mode, allows free movement with no gravity or collision. ✨🪽 Now cannot enter walls but can go through brush entities. |
-| DEAD | Player is dead; prevents acceleration and turning but allows minor physics effects such as gravity. |
-| GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
-| FREEZE | Player is completely frozen preventing all input and movement. |
+| name | Name of the cvar. |
+| string<br>🪽 stringval | String representation of the cvar's value.<br/>(🪽⚠️ This creates a copy of the string, and **will** be expensive if called every frame. The value of the string should be cached, and `modified_count` used to see if it is modified from its old value.) |
+| latched_string<br>🪽 latched_stringval| Used for latched values (Changes that take effect after restart).<br/>(🪽⚠️ This creates a copy of the string, and **will** be expensive if called every frame. The value of the string should be cached, and `modified_count` used to see if it is modified from its old value.) |
+| flags | [Cvar flags; see cvar_flags_t](Types#cvar_flags_t)  |
+| 🍦&nbsp;modified<br>✨&nbsp;🪽&nbsp;modified_count | 🍦boolean representing if this cvar has been changed or not.<br/>✨🪽 An integer that counts the number of times modified instead. This value will never be zero, which allows you to always check if the cvar has been modified even in its default state. |
+| value | Floating point representation of the cvar's value. |
+| ✨🪽 integer | Integral representation of the cvar's value. |
+| 🪽 boolean | Property that returns true if the cvar is non-zero. |
+| 🍦✨ next | Linked list pointer to the next cvar. This is internal; do not touch. |
 
-## `pmflags_t`
+## `cvar_flags_t`
 
-Player movement flags used for prediction and physics. Mainly used to keep track of the player's movement state. They are defined as bitflags meaning a pmove_state_t can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+Flags used to define different cvar behaviours. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+🍦✨ The enum constants are globals prefixed with the string `CVAR_` to prevent name clashes.
+
+| Flag Name | Description |
+| --- | --- |
+| ✨🪽 NOFLAGS | Representation for no flags; the same as zero. |
+| ARCHIVE | Causes the cvar to be saved to the config file. |
+| USERINFO | Sends the cvar value to the server as part of the player's userinfo (name, model, skin, etc). |
+| SERVERINFO | Sends the cvar value to the client as part of server's info (game rules, max players, etc). |
+| NOSET | Prevents the cvar to be changed from the console at all, but can still be modified from the command line. |
+| LATCH | Prevents the cvar from taking effect immediately instead the value is latchedand applied after a map change or game restart. |
+| ✨&nbsp;🪽&nbsp;USER_PROFILE | New flag that is only for the client/cgame; it indicates that a cvar is treated like userinfo, but not synced with the server. This is to allow cloud saved client-side config values that aren't part of userinfo. |
+
+## `edict_t`
+
+Stores the data that is transmitted between the server & client, as well as various bits of data that the server uses for things like collision. (🍦✨ This struct is also where you add new members that you can use for whatever purpose on entities.)
 
 | Member | Description |
 | --- | --- |
-| ✨🪽 NONE | Representation for no flags; the same as zero. |
-| DUCKED | Player is crouching. |
-| JUMP_HELD | Jump button is being held. |
-| ON_GROUND | Player is on solid ground. |
-| TIME_WATERJUMP | Water jump state; player is jumping out of water. |
-| TIME_LAND | Small delay after landing when the player can jump again. |
-| TIME_TELEPORT | Stops movement briefly after teleporting. |
-| 🍦&nbsp;NO_PREDICTION<br>✨&nbsp;🪽&nbsp;NO_POSITIONAL_PREDICTION | Disables movement prediction. (Used for grappling hook). ✨🪽 Only disables prediction on origin, allowing angles to be predicted.|
-| ✨🪽 ON_LADDER | Player is on a ladder. |
-| ✨🪽 NO_ANGULAR_PREDICTION | Angular equivalent of `NO_POSITIONAL_PREDICTION`; disables angular prediction. |
-| ✨🪽 IGNORE_PLAYER_COLLISION | Don't predict collision with other players. |
-| ✨🪽 TIME_TRICK | If set then `pm_time` is the time remaining to start a 'trick jump', which is a canonized version of a bug in the vanilla movement code that allowed for quick multi-jumps. |
-
-## `pmove_state_t`
-
-Player's movement state.
-
-| Member | Description |
-| --- | --- |
-| pm_type | [Player movement type; see pmtype_t](Types#pmtype_t) |
-| origin | Player position. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
-| velocity | Player velocity. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
-| pm_flags | [Player movement flags; see pmflags_t](Types#pmflags_t) |
-| pm_time | A time value, used for certain movement flags that affect movement over a short period of time. In 🍦 these are 8 milliseconds per 1 value (`/ 8` and `* 8` to encode and decode, respectively). In ✨🪽 these are just in milliseconds. |
-| gravity | Current gravity value applied to the player. |
-| delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
-| ✨🪽 viewheight | Player's viewheight (offset from the origin to the eye position); used for crouch prediction. |
-
-## `button_t`
-
-Button bits that is used to represent button states for a client. They are defined as bitflags meaning one `button_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-| Member | Description |
-| --- | --- |
-| ✨🪽 NONE | Representation for no flags; save as zero. |
-| ATTACK |The fire/attack button is pressed. |
-| USE | The use/interaction button is pressed. |
-| ✨🪽 HOLSTER | Corresponds to new `+holster` command. |
-| ✨🪽 JUMP | The jump button is pressed; replaces the `usercmd_t::upmove`.  |
-| ✨🪽 CROUCH | The crouch button is pressed; replaces the `usercmd_t::upmove`. |
-| ANY | Any button is pressed; used for general input detection. |
-
-## `usercmd_t`
-
-Usercommand that represents a player's input comands that is sent from the client to the server each frame.
-
-| Member | Description |
-| --- | --- |
-| msec | The frame time in milliseconds since the last command. |
-| buttons | [Button bitmask; see button_t](Types#button_t) |
-| angles | View angles (yaw, pitch, roll). |
-| forwardmove | Player movement along the forward axis; positive value means forward, negative value means backwards. |
-| sidemove | Player movement along the left/right axis; positive value means right, negative value means left. |
-| 🍦 upmove | Player movement along the vertical axis; positive means up or jumping, negative means down or crouching. |
-| 🍦 impulse | A vestigial from Quake, referring to the `impulse` passed from the last impulse cmd. Not used by the game; use `ClientCommand` commands instead. |
-| 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
-| ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
-
-## `water_level_t`
-
-New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name.
-
-| Value | Member | Description |
-| --- | --- | --- |
-| 0 | NONE | Not touching water. |
-| 1 | FEET | Water is at feet level. |
-| 2 | WAIST | Water is at waist level.  |
-| 3 | UNDER | Entity is completely under water. |
-
-## `refdef_flags_t`
-
-Refresh definition flags that affect the entire scene. They are defined as bitflags meaning one `refdef_flags_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-| Member | Description |
-| --- | --- |
-| ✨🪽 NONE | Representation for no flags; save as zero. |
-| UNDERWATER | When the player is underwater this flag warps the screen in order to create a distortion effect. |
-| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. Not useful to the game code. |
-| IRGOGGLES | Infrared goggles effect. |
-| UVGOGGLES | Ultraviolet goggles effect. Unused. |
-| ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
-
-## ✨🪽 `touch_list_t`
-
-Touch list collection of touches that occurs during movement. Each trace in the collection refers to a box or point that has been collided with.
-
-| Member | Description |
-| --- | --- |
-| num | The number of collision traces currently stored within the list. |
-| traces | A fixed size array of [traces; see trace_t](Types#trace_t). |
-
-## `pmove_t`
-
-Player movement state, used for player movement and collision detection. This type contains the player's current movement state, input commands and movement results.
-
-| Member | Description |
-| --- | --- |
-| s | Input & output variable. [Player movement state; see pmove_state_t](Types#pmove_state_t) |
-| cmd | Input variable. [User command; see usercmd_t](Types#usercmd_t) |
-| snapinitial | Input variable. Set to true if this is an 'initial position' (when state has been reset, essentially, like on respawn). |
-| 🍦 numtouch | Output variable. Number of entities that the player touched. |
-| 🍦 touchents | Output variable. Array of entities that the player collided with. |
-| ✨ touch | Output variable. [Touch list; see touch_list_t](Types#touch_list_t) |
-| viewangles | Player's view angles. |
-| 🍦 viewheight | Output variable. The viewheight (offset from the origin to the eye position); used for crouching. (✨🪽 moved this to `pmove_state_t`) |
-| mins, maxs | Output variables. The entity's size in the world. This is an axis-aligned bounding box. |
-| groundentity | Output variable. The entity that the player is standing on. |
-| ✨🪽 groundplane | Output variable. [Collision plane; see cplane_t](Types#cplane_t) |
-| watertype | Type of liquid the player is standing on?. |
-| waterlevel | [Water level; see water_level_t](Types#water_level_t) |
-| trace() | Collision detection function callback. |
-| pointcontents() | Function callback to check the material at a point. |
-| ✨🪽 player | Input variable. An opaque handle to an [edict; see edict_t](Types#edict_t) that refers to the current player. This is passed back to the `trace` function. |
-| ✨🪽 clip() | World clipping function callback. |
-| ✨🪽 viewoffset | Input variable. Player's view offset. |
-| ✨🪽 screen_blend | Output variable containing the full-screen blend to apply to the view. |
-| ✨🪽 rdflags | Output variable. [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
-| ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
-| ✨🪽 step_clip | Output variable; if we stepped up onto a step via a jump, this is set to true. Helps client prediction avoid a harsh snap. |
-| ✨🪽 impact_delta | Output variable; impact delta used for falling damage. |
-
-> [!NOTE]
-> 🪽 Due to limitations, the `touch`/`touchents`/`numtouch` members are instead member functions of `pmove_t`: `touch_length`, `touch_push_back`, `touch_get` and `touch_clear`.
+| s | [Entity state; see entity_state_t](Types#entity_state_t) |
+| client | [Pointer to client struct; see gclient_t](Types#gclient_t) |
+| ✨🪽 sv | [State data for bots; see sv_entity_t](Types#sv_entity_t) |
+| inuse | Whether the entity is currently active or not. See [Entity Lifecycle](entity-lifecycle). |
+| 🍦 area | Pointers to other entities that are linked into the same world area. This is read-only; modifying this will have negative consequences. To check if an entity is linked into the world, check if prev or next is non-null. See [Entity Lifecycle](entity-lifecycle). |
+| ✨🪽 linked | Whether the entity is currently linked into the world. See [Entity Lifecycle](entity-lifecycle). |
+| linkcount | A running tally on how many times this entity has been linked. This can be useful to tell if an entity has been moved by something else, in which case you may want to run additional checks (for instance, to check if you've been moved by a platform), by comparing it against a previously-known value. |
+| 🍦&nbsp;num_clusters | The number of clusters we are linked into. Read-only, not useful to the game code. |
+| 🍦&nbsp;clusternums | The clusters we are linked into. Read-only, not useful to the game code. |
+| 🍦&nbsp;headnode | The headnode we are linked into, if we overrun the cluster count. Read-only, not useful to the game code. |
+| areanum, areanum2 | The current areas this entity is linked into. Entities can be linked into two areas, if they are straggling a water brush or standing inside of a door for instance. See [Areas](Areas). (🍦 this is different/unrelated to the `area` member) |
+| svflags | A bit set of flags the server & game use for various things. See [svflags_t](Types#svflags_t) |
+| mins, maxs | The entity's size in the world. This is an axis-aligned bounding box. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
+| absmin, absmax | The entity's absolute box in the world, expanded by 1 on each axis. This is the same as (origin + mins) - { 1, 1, 1 } and (origins + maxs) + { 1, 1, 1 } respectively, *except* for brush models where this value may also be expanded to include rotation. This is read-only. |
+| size | The entity's size (mins + maxs). This is read-only. |
+| solid | The entity's solidity type. `TRIGGER` and `BBOX` are both usable by any entity, and simply link the entity into either trigger or solid area links, respectively. The `BSP` value can only be used on brush models (entities whose modelindex points to an inline BSP model, such as `*2`). [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
+| clipmask | The entity's content mask. The server does not use this field, it is only in this part of the structure for historical reasons. Physics routines of the game use this to control which entities this entity will touch when moving. |
+| owner | The entity that owns this entity. When non-null, traces that have an `ignore` field will also ignore the owner (or ownee); for instance, shots fired from your own weapon are owned by you and ignore their owner when they move, which allows them to pass through you and vice versa. |
 
 ## `effects_t`
 
@@ -478,85 +245,74 @@ Visual effects that are applied to entities. They are defined as bitflags meanin
 > [!ATTENTION]
 > TODO: Document special values/masks
 
-## `renderfx_t`
+## `entity_event_t`
 
-Special render effects for entities. They are defined as bitflags meaning one `renderfx_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-| Member | Description |
-| --- | --- |
-| ✨🪽 NONE | Representation for no flags; save as zero. |
-| MINLIGHT | Ensures entity always has some lighting applied to it. |
-| VIEWERMODEL | Prevents entity from being seen from the player's eyes; can still be seen from reflections. |
-| WEAPONMODEL | The opposite of `VIEWERMODEL` this entity is only drawn from the player's view. |
-| FULLBRIGHT | Makes the entity always fully lit; ignores ambient lighting. |
-| DEPTHHACK | Adjust Z-buffer depth for viewmodels preventing them to clip through walls. |
-| TRANSLUCENT | Makes the entity semi-transparent. |
-| 🍦FRAMELERP<br>✨&nbsp;🪽&nbsp;NO_ORIGIN_LERP | Disables origin interpolation. |
-| BEAM | Marks the entity as a beam effect; used for lasers and lighting. ✨🪽 Can now create custom segmented beams by setting a non-one modelindex on beams. |
-| CUSTOMSKIN | Use custom skin texture from the `image_precache`. |
-| GLOW | Applies a pulsing glow effect. |
-| SHELL_RED | Adds a red energy shell effect. |
-| SHELL_GREEN | Adds a green energy shell effect. |
-| SHELL_BLUE | Adds a blue energy shell effect. |
-| ✨🪽NOSHADOW | Marks entity to not have a shadow. |
-| ✨🪽CASTSHADOW | Used for dynamic lights, to tell it it is a shadow-caster. |
-| IR_VISIBLE | Entity is visible through infrared goggles. |
-| SHELL_DOUBLE | Adds both red and blue shell effects. |
-| SHELL_HALF_DAM | Indicates half-damage protection. |
-| USE_DISGUISE | Marks the entity as using a disguise. |
-| ✨🪽 SHELL_LITE_GREEN | Equivalent shell color for `DUALFIRE`. |
-| ✨🪽 CUSTOM_LIGHT | Creates custom dynamic light at the position of the object. |
-| ✨🪽 FLARE | Marks entity to be rendered as a flare instead of the usual entity rendering. |
-| ✨🪽 OLD_FRAME_LERP | Signals to the client that `s.old_frame` should be used for the next frame and respected by the client. |
-| ✨🪽 DOT_SHADOW | Draw a blob shadow underneath the entity. |
-| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slots, this entity can be replaced. |
-| ✨🪽 NO_LOD | Only use high quality models if available (do not fall back to MD2s for LOD). |
-| ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
-| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; causes their Z change from previous frame to interpolate at 10hz, similar to how the player view handles stairs. |
-| ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
-
-> [!ATTENTION]
-> TODO: Document special values/masks
-
-## `player_muzzle_t`
-
-Player muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+Entity events related to in-game entities, represents effects that occur relative to an entity's position.
 
 | Member | Description |
 | --- | --- |
-| ✨🪽 NONE | Representation for no flags; save as zero. |
-| BLASTER | Blaster shot. |
-| MACHINEGUN | Machine gun muzzle flash. |
-| SHOTGUN | Shotgun muzzle flash. |
-| CHAINGUN1 | Chaingun fire; first stage with slow fire rate. |
-| CHAINGUN2 | Chainfun fire; second stage with medium fire rate. |
-| CHAINGUN3 | Chaingun fire; third stage with full fire rate. |
-| RAILGUN | Railgun shot effect. |
-| ROCKET | Rocket launcher muzzle flash. |
-| GRENADE | Grenade launcher muzzle flash. |
-| LOGIN | Effect when a player spawns into the game. |
-| LOGOUT | Effect when a player leaves the game. |
-| RESPAWN | Effect when player respawns after dying. |
-| BFG | BFG muzzle flash. |
-| SSHOTGUN | Super shotgun muzzle flash. |
-| HYPERBLASTER | Hyperblaster muzzle flash. |
-| ITEMRESPAWN | Item respawn effect. |
-| IONRIPPER | Ion ripper muzzle flash. |
-| BLUEHYPERBLASTER | Alternative hyperblaster muzzle flash. |
-| PHALANX | Phalanx cannon muzzle flash. |
-| ✨🪽 BFG2 | Secondary muzzle flash for BFG (when the fire frame occurs). |
-| ✨🪽 PHALANX2 | Secondary muzzle flash for the Phalanx (right barrel). |
-| SILENCED | Flag to suppress muzzle flash for silenced weapons. |
-| ETF_RIFLE | ETF rifle muzzle flash. |
-| 🍦UNUSED<br>✨🪽 PROX | Prox launcher muzzle flash. |
-| 🍦SHOTGUN2<br>✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash. Unused in vanilla. |
-| HEATBEAM | Heat beam lazer muzzle flash. |
-| BLASTER2 | Unused blaster muzzle flash. |
-| TRACKER | Disruptor projectile muzzle flash. |
-| NUKE1 | Nuclear weapon; stage 1 explosion flash. |
-| NUKE2 | Nuclear weapon; stage 2 explosion flash. |
-| NUKE4 | Nuclear weapon; stage 4 explosion flash. |
-| NUKE8 | Nuclear weapon; stage 8 explosion flash. |
+| NONE | No event; represents default as zero. |
+| ITEM_RESPAWN | Triggers when an item respawns. |
+| FOOTSTEP | Indicates that a player has taken a step. |
+| FALLSHORT | Represents a short fall that doesn't cause damage but triggers a landing sound. |
+| FALL | Represents a moderate fall that may cause damage and plays a landing sound. |
+| FALLFAR | Renresents a long fall that can cause significant damage or death. |
+| PLAYER_TELEPORT | Occurs when a player teleports; triggers visual and sound effect. |
+| OTHER_TELEPORT | Similar to `PLAYER_TELEPORT` but for other entities. |
+| ✨🪽 OTHER_FOOTSTEP | Similar to `FOOTSTEP` but for other entities. |
+| ✨🪽 LADDER_STEP | Ladder climbing footstep event. |
+
+## `entity_state_t`
+
+The entity state stores the data that is used for transmission to the client. It basically describes everything the client needs to render a given entity, as well as some other data that the server uses for things like collision.
+
+| Member | Description |
+| --- | --- |
+| number | The numeric index of this entity. This should never be touched. |
+| origin | The entity's position in the world. [Changing this requires re-linking the entity.](Entity-Lifecycle#linking) |
+| angles | The entity's Euler angles. [Changing this may require re-linking the entity if it is a brush model.](Entity-Lifecycle#linking) |
+| old_origin | The entity's previous in the world. This is mainly used for interpolating entities on the client side, but some types of entities (like `RF_BEAM`) will use this for a secondary position. |
+| modelindex | [Model index](model-index) |
+| modelindex2 | Secondary [model index](model-index) |
+| modelindex3 | Third [model index](model-index) |
+| modelindex4 | Fourth [model index](model-index) |
+| frame | Index of frame used for animating sprites, brush model textures or models. It is sometimes also used to represent colors (like four palette indices for `RF_BEAM`) or overloaded for other purposes. |
+| skinnum | Index of skin used for models. It is sometimes overloaded for other purposes. |
+| effects | Bit flags of effects on this entity. See [effects_t](Types#effects_t). |
+| renderfx | Bit flags of rendering effects on this entity. See [renderfx_t](Types#renderfx_t). |
+| solid | Packed solidity data. This is managed automatically by the server, do not touch! See [solid_t](Types#solid_t). |
+| sound | [Sound index](sound-index) - looped sound that plays from this entity. |
+| event | Event index; events are played once when set and the client receives it, and is reset to zero at the start of every frame. See [entity_event_t](Types#entity_event_t). |
+| ✨🪽 alpha | Alpha scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
+| ✨🪽 scale | Entity scale scalar. For backwards compatibility, a value of `0.0` is the same as a value of `1.0`. |
+| ✨ instance_bits | For split-screen players, this controls the visibility of an entity for each split screen player. Managed by the server code, do not touch. |
+| ✨🪽 loop_volume | Volume for looped sounds. For backwards compatibility, `0.0` will equal `1.0`. Note that as of Update 1, this field does not work correctly on the client side. |
+| ✨&nbsp;🪽&nbsp;loop_attenuation | Volume for looped sounds. For backwards compatibility, `0.0` will equal `3.0`. A value of `-1` indicates no attenuation. |
+| ✨ owner | Entity owner index; this is used to allow client prediction to properly handle collisions against solid entities that "own" us (such as teslas). It is automatically managed by the server; do not touch. |
+| ✨🪽 old_frame | When `RF_OLD_FRAME_LERP` is set on `renderfx`, this value is transmitted over the network and forces interpolation from this frame to the current frame. It is useful when you wish to smooth a transition from an animation that might have ugly interpolation artifacts (like the Enforcer's head being shot off). |
+
+## ✨🪽 `game_style_t`
+
+Enumeration describing different game styles.
+
+| Member | Description |
+| --- | --- |
+| PVE | Player versus environment mode. |
+| FFA | Free for all mode. |
+| TDM | Team deathmatch mode. |
+
+## `layout_flags_t`
+
+New layout flags type (added in ✨🪽) that is used to give names to the different layout types that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name. These are bitflags meaning multiple values can be active at once.
+
+| Value | Member | Description |
+| --- | --- | --- |
+| 0 | LAYOUT | Layout is active. |
+| 1 | INVENTORY | Inventory is active. |
+| 2 | HIDE_HUD | Hide the entire hud. |
+| 3 | INTERMISSION | Intermission is being drawn; collapse splitscreen into a single screen. |
+| 4 | HELP | Help screen is active. |
+| 5 | HIDE_CROSSHAIR | Hide crosshair only. |
 
 ## 🍦✨`monster_muzzleflash_id_t` <br/> 🪽`monster_muzzle_t`
 
@@ -627,6 +383,415 @@ Monster muzzle effects. In 🍦 these flags are defined as constant values while
 | ✨🪽 MZ2_MEDIC_HYPERBLASTER1_1 - 12 | Medic hyperblaster sweed muzzle flash positions. |
 | ✨🪽 MZ2_MEDIC_HYPERBLASTER2_1 - 12 | Medic commander hyperblaster sweed muzzle flash positions. |
 | ✨🪽 MZ2_LAST | Only used internally for compile-time checks. |
+
+## `player_muzzle_t`
+
+Player muzzle effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| BLASTER | Blaster shot. |
+| MACHINEGUN | Machine gun muzzle flash. |
+| SHOTGUN | Shotgun muzzle flash. |
+| CHAINGUN1 | Chaingun fire; first stage with slow fire rate. |
+| CHAINGUN2 | Chainfun fire; second stage with medium fire rate. |
+| CHAINGUN3 | Chaingun fire; third stage with full fire rate. |
+| RAILGUN | Railgun shot effect. |
+| ROCKET | Rocket launcher muzzle flash. |
+| GRENADE | Grenade launcher muzzle flash. |
+| LOGIN | Effect when a player spawns into the game. |
+| LOGOUT | Effect when a player leaves the game. |
+| RESPAWN | Effect when player respawns after dying. |
+| BFG | BFG muzzle flash. |
+| SSHOTGUN | Super shotgun muzzle flash. |
+| HYPERBLASTER | Hyperblaster muzzle flash. |
+| ITEMRESPAWN | Item respawn effect. |
+| IONRIPPER | Ion ripper muzzle flash. |
+| BLUEHYPERBLASTER | Alternative hyperblaster muzzle flash. |
+| PHALANX | Phalanx cannon muzzle flash. |
+| ✨🪽 BFG2 | Secondary muzzle flash for BFG (when the fire frame occurs). |
+| ✨🪽 PHALANX2 | Secondary muzzle flash for the Phalanx (right barrel). |
+| SILENCED | Flag to suppress muzzle flash for silenced weapons. |
+| ETF_RIFLE | ETF rifle muzzle flash. |
+| 🍦UNUSED<br>✨🪽 PROX | Prox launcher muzzle flash. |
+| 🍦SHOTGUN2<br>✨🪽ETF_RIFLE2 | Second barrel of the ETF rifle muzzle flash. Unused in vanilla. |
+| HEATBEAM | Heat beam lazer muzzle flash. |
+| BLASTER2 | Unused blaster muzzle flash. |
+| TRACKER | Disruptor projectile muzzle flash. |
+| NUKE1 | Nuclear weapon; stage 1 explosion flash. |
+| NUKE2 | Nuclear weapon; stage 2 explosion flash. |
+| NUKE4 | Nuclear weapon; stage 4 explosion flash. |
+| NUKE8 | Nuclear weapon; stage 8 explosion flash. |
+
+## `player_state_t`
+
+Stores the information needed for the client to render a view.
+
+| Member | Description |
+| --- | --- |
+| pmove | [Player movement state; see pmove_state_t](Types#pmove_state_t) |
+| viewangles | 3D vector representing the player's view in Euler angles. |
+| viewoffset | 3D vector representing an offset for the player's view. Used to add bob and other effects. |
+| kick_angles | 3D vector the holds values for weapon kick angles used when calculating the view offset. |
+| gunangles | 3D vector representing the angle of the gun the player is holding. Used to rotate the gun when moving and bobbing. |
+| gunoffset | 3D vector representing an offset for the player's gun.  |
+| gunindex | Index to the gun model being used. |
+| ✨🪽 gunskin | Skin number used on the weapon. |
+| gunframe | Frame index to current animation for the player's gun. |
+| ✨🪽 gunrate | The gun framerate specified in hz. A value of 0 is equivalent of 10hz for backwards compatability. This is used to speed up framerate in case of powerups like haste. |
+| 🍦&nbsp;blend<br>✨&nbsp;🪽&nbsp;screen_blend | Full-screen color change value, used for screen flashing. |
+| ✨&nbsp;🪽&nbsp;damage_blend| New type of blend that only occurs around the edge of the screen; many effects are now using this rather than full-screen blend, for epilepsy reasons. |
+| fov | Player's horizontal field of view. |
+| rdflags | Flags attached to the player's refdef (refresh definition) that affect the entire scene. See [Player movement state; see refdef_flags_t](Types#refdef_flags_t) |
+| stats | Values used for status bar updates; this is an array of 32 (✨🪽 64) `short`s transmitted to the client, which is then used by [the HUD layout string](HUD Layout) for rendering the HUD and other layouts |
+| ✨🪽 team_id | Used for team-oriented gamemode to specify the player's team. |
+
+## `pmflags_t`
+
+Player movement flags used for prediction and physics. Mainly used to keep track of the player's movement state. They are defined as bitflags meaning a pmove_state_t can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; the same as zero. |
+| DUCKED | Player is crouching. |
+| JUMP_HELD | Jump button is being held. |
+| ON_GROUND | Player is on solid ground. |
+| TIME_WATERJUMP | Water jump state; player is jumping out of water. |
+| TIME_LAND | Small delay after landing when the player can jump again. |
+| TIME_TELEPORT | Stops movement briefly after teleporting. |
+| 🍦&nbsp;NO_PREDICTION<br>✨&nbsp;🪽&nbsp;NO_POSITIONAL_PREDICTION | Disables movement prediction. (Used for grappling hook). ✨🪽 Only disables prediction on origin, allowing angles to be predicted.|
+| ✨🪽 ON_LADDER | Player is on a ladder. |
+| ✨🪽 NO_ANGULAR_PREDICTION | Angular equivalent of `NO_POSITIONAL_PREDICTION`; disables angular prediction. |
+| ✨🪽 IGNORE_PLAYER_COLLISION | Don't predict collision with other players. |
+| ✨🪽 TIME_TRICK | If set then `pm_time` is the time remaining to start a 'trick jump', which is a canonized version of a bug in the vanilla movement code that allowed for quick multi-jumps. |
+
+## `pmove_state_t`
+
+Player's movement state.
+
+| Member | Description |
+| --- | --- |
+| pm_type | [Player movement type; see pmtype_t](Types#pmtype_t) |
+| origin | Player position. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
+| velocity | Player velocity. (🍦 these are compressed as shorts; divide by 8 to decode, multiply by 8 to decode) |
+| pm_flags | [Player movement flags; see pmflags_t](Types#pmflags_t) |
+| pm_time | A time value, used for certain movement flags that affect movement over a short period of time. In 🍦 these are 8 milliseconds per 1 value (`/ 8` and `* 8` to encode and decode, respectively). In ✨🪽 these are just in milliseconds. |
+| gravity | Current gravity value applied to the player. |
+| delta_angles | Baseline angles. These describe the initial angle of the player. Since the server isn't in charge of the player's actual angles (the client is authoritative for them), this is the method of changing where the "rest position" is for angles, such as from spawning or teleporting. (🍦 these are compressed as shorts; use ANGLE2SHORT / SHORT2ANGLE to decode) |
+| ✨🪽 viewheight | Player's viewheight (offset from the origin to the eye position); used for crouch prediction. |
+
+## `pmove_t`
+
+Player movement state, used for player movement and collision detection. This type contains the player's current movement state, input commands and movement results.
+
+| Member | Description |
+| --- | --- |
+| s | Input & output variable. [Player movement state; see pmove_state_t](Types#pmove_state_t) |
+| cmd | Input variable. [User command; see usercmd_t](Types#usercmd_t) |
+| snapinitial | Input variable. Set to true if this is an 'initial position' (when state has been reset, essentially, like on respawn). |
+| 🍦 numtouch | Output variable. Number of entities that the player touched. |
+| 🍦 touchents | Output variable. Array of entities that the player collided with. |
+| ✨ touch | Output variable. [Touch list; see touch_list_t](Types#touch_list_t) |
+| viewangles | Player's view angles. |
+| 🍦 viewheight | Output variable. The viewheight (offset from the origin to the eye position); used for crouching. (✨🪽 moved this to `pmove_state_t`) |
+| mins, maxs | Output variables. The entity's size in the world. This is an axis-aligned bounding box. |
+| groundentity | Output variable. The entity that the player is standing on. |
+| ✨🪽 groundplane | Output variable. [Collision plane; see cplane_t](Types#cplane_t) |
+| watertype | Type of liquid the player is standing on?. |
+| waterlevel | [Water level; see water_level_t](Types#water_level_t) |
+| trace() | Collision detection function callback. |
+| pointcontents() | Function callback to check the material at a point. |
+| ✨🪽 player | Input variable. An opaque handle to an [edict; see edict_t](Types#edict_t) that refers to the current player. This is passed back to the `trace` function. |
+| ✨🪽 clip() | World clipping function callback. |
+| ✨🪽 viewoffset | Input variable. Player's view offset. |
+| ✨🪽 screen_blend | Output variable containing the full-screen blend to apply to the view. |
+| ✨🪽 rdflags | Output variable. [Refresh definition flags; see refdef_flags_t](Types#refdef_flags_t) |
+| ✨🪽 jump_sound | Output variable to tell the game to play a jumping sound. |
+| ✨🪽 step_clip | Output variable; if we stepped up onto a step via a jump, this is set to true. Helps client prediction avoid a harsh snap. |
+| ✨🪽 impact_delta | Output variable; impact delta used for falling damage. |
+
+> [!NOTE]
+> 🪽 Due to limitations, the `touch`/`touchents`/`numtouch` members are instead member functions of `pmove_t`: `touch_length`, `touch_push_back`, `touch_get` and `touch_clear`.
+
+## `pmtype_t`
+
+Defines different types of player movement states for the client-side movement prediction.
+
+| Member | Description |
+| --- | --- |
+| NORMAL | Standard player movement. |
+| ✨🪽 GRAPPLE | Used for grappling hook, not affected by gravity and is instead pulled towards `velocity`. |
+| ✨🪽 NOCLIP | No clipping against anything; flying physics. This is what `SPECTATOR` represents in 🍦. |
+| SPECTATOR | 🍦 No clipping mode, allows free movement with no gravity or collision. ✨🪽 Now cannot enter walls but can go through brush entities. |
+| DEAD | Player is dead; prevents acceleration and turning but allows minor physics effects such as gravity. |
+| GIB | Player has exploded into gibs using a smaller bounding box and no movement. |
+| FREEZE | Player is completely frozen preventing all input and movement. |
+
+## `print_type_t`
+
+A print priority level, that tells the client how important the message is and whether it should be filtered or not.
+
+In most engines, the `msg` userinfo cvar can be used to filter out certain types of messages that you don't want to receive.
+
+🍦✨ The enum constants are globals prefixed with the string `PRINT_` to prevent name clashes.
+
+✨🪽 There are also bitflags that can be mixed with any level type.
+
+| Member | Description |
+| --- | --- |
+| LOW | Low priority messages, such as pickups. |
+| MEDIUM | Medium priority messages, such as death messages. |
+| HIGH | High priority messages; anything that is more important than the other two. |
+| CHAT | A chat message. This message is also green and makes a specific sound on the client when displayed. |
+| ✨🪽 TYPEWRITER | The message is displayed in the center of the screen, one character at a time like a typewriter. This is used for level goals in the re-release. |
+| ✨🪽 CENTER | The message is displayed in the center of the screen all at once. |
+| ✨🪽 TTS | Like `HIGH`, but will be spoken audibly if the engine supports text-to-speech. |
+| ✨🪽 BROADCAST | Bitflag that can be mixed with any of the above types. If set, `Loc_Print` will deliver this message to all clients. |
+| ✨🪽 NO_NOTIFY | Bitflag that can be mixed with any of the above types. If set, clients will only display this message in the console and not on the notification bar. |
+
+## 🍦 `qboolean`
+
+Quake II's initial source was written pre-C99 and didn't have a native boolean type. As a result, it uses a custom enum named `qboolean` with `false` and `true` values. In re-release, this was changed to the canonical `bool` type (which, in C, matches `stdbool.h`'s `_Bool`).
+
+## `refdef_flags_t`
+
+Refresh definition flags that affect the entire scene. They are defined as bitflags meaning one `refdef_flags_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| UNDERWATER | When the player is underwater this flag warps the screen in order to create a distortion effect. |
+| NOWORLDMODEL | Prevents rendering world geometry; used in menus and some cutscenes. Not useful to the game code. |
+| IRGOGGLES | Infrared goggles effect. |
+| UVGOGGLES | Ultraviolet goggles effect. Unused. |
+| ✨🪽 NO_WEAPON_LERP | Used to temporarily disable interpolation on weapons. |
+
+## `renderfx_t`
+
+Special render effects for entities. They are defined as bitflags meaning one `renderfx_t` can represent multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; save as zero. |
+| MINLIGHT | Ensures entity always has some lighting applied to it. |
+| VIEWERMODEL | Prevents entity from being seen from the player's eyes; can still be seen from reflections. |
+| WEAPONMODEL | The opposite of `VIEWERMODEL` this entity is only drawn from the player's view. |
+| FULLBRIGHT | Makes the entity always fully lit; ignores ambient lighting. |
+| DEPTHHACK | Adjust Z-buffer depth for viewmodels preventing them to clip through walls. |
+| TRANSLUCENT | Makes the entity semi-transparent. |
+| 🍦FRAMELERP<br>✨&nbsp;🪽&nbsp;NO_ORIGIN_LERP | Disables origin interpolation. |
+| BEAM | Marks the entity as a beam effect; used for lasers and lighting. ✨🪽 Can now create custom segmented beams by setting a non-one modelindex on beams. |
+| CUSTOMSKIN | Use custom skin texture from the `image_precache`. |
+| GLOW | Applies a pulsing glow effect. |
+| SHELL_RED | Adds a red energy shell effect. |
+| SHELL_GREEN | Adds a green energy shell effect. |
+| SHELL_BLUE | Adds a blue energy shell effect. |
+| ✨🪽NOSHADOW | Marks entity to not have a shadow. |
+| ✨🪽CASTSHADOW | Used for dynamic lights, to tell it it is a shadow-caster. |
+| IR_VISIBLE | Entity is visible through infrared goggles. |
+| SHELL_DOUBLE | Adds both red and blue shell effects. |
+| SHELL_HALF_DAM | Indicates half-damage protection. |
+| USE_DISGUISE | Marks the entity as using a disguise. |
+| ✨🪽 SHELL_LITE_GREEN | Equivalent shell color for `DUALFIRE`. |
+| ✨🪽 CUSTOM_LIGHT | Creates custom dynamic light at the position of the object. |
+| ✨🪽 FLARE | Marks entity to be rendered as a flare instead of the usual entity rendering. |
+| ✨🪽 OLD_FRAME_LERP | Signals to the client that `s.old_frame` should be used for the next frame and respected by the client. |
+| ✨🪽 DOT_SHADOW | Draw a blob shadow underneath the entity. |
+| ✨🪽 LOW_PRIORITY | Marks the entity as low priority. If the renderer runs out of entity slots, this entity can be replaced. |
+| ✨🪽 NO_LOD | Only use high quality models if available (do not fall back to MD2s for LOD). |
+| ✨🪽 NO_STEREO | Stereo sound is disabled on the entity. |
+| ✨🪽 STAIR_STEP | Marks the entity as they stepped on stairs; causes their Z change from previous frame to interpolate at 10hz, similar to how the player view handles stairs. |
+| ✨🪽 FLARE_LOCK_ANGLE | Used in flare rendering to cause the flare to not rotate towards the viewer. |
+
+> [!ATTENTION]
+> TODO: Document special values/masks
+
+## 🍦 `svc_ops_e`<br/>✨🪽 `server_command_t`
+
+Definition of server commands. These messages help synchronize the game state between the server and client.
+
+| Member | Description |
+| --- | --- |
+| bad | Invalid or unknown server command. |
+| muzzleflash | Triggers a visual effect for a weapon firing, used for player weapons. |
+| muzzleflash2 | Similar to `muzzleflash` but for non player entities. |
+| temp_entity | Creates temporary entities such as explosion, blood splashes and other short-lived effects. |
+| layout | Updates the HUD layout. |
+| inventory | Updates the player's inventory items and ammo counts. |
+| nop | No operation; used as a placeholder or for keeping connection alive. |
+| disconnect | Signals that a client disconnected from the server. |
+| reconnect | Notifies the client that it should reconnect to the server. |
+| sound | Sends a sound effect to be played at a specific location. |
+| print | Sends a text message to the client console. |
+| stufftext | Sends a command string to be executed in the client's console. |
+| serverdata | Provides the initial server information such as protocol version map name and max player count. |
+| configstring | Sends configuration data from the server to the client. |
+| spawnbaseline | Sends baseline entity data. |
+| centerprint | Displays a message in the center of the screen. |
+| download | Transfer files from the server to the client, used for downloading missing assets. |
+| playerinfo | Updates player state information such as position, angles and animation frames. |
+| packetentities | Sends a full list of entities and their states for a given frame. |
+| deltapacketentities | Sends full list of entity changes since the last frame. |
+| frame | Synchronizes the client with the server's game state. |
+| ✨🪽 splitclient | Indicates to the client which split screen player the next messages are directed towards. |
+| ✨🪽 configblast | Compressed configstring data. |
+| ✨🪽 spawnbaselineblast | Compressed baseline data. |
+| ✨🪽 level_restart | Sent when the server executes a `restart_level` command. |
+| ✨🪽 damage | Sent after accumulating damage on a player. |
+| ✨🪽 locprint | New entrypoint for prints. |
+| ✨🪽 fog | [Fog data; see svc_fog_data_t](Types#svc_fog_data_t). |
+| ✨🪽 waitingforplayers | Sent when there are players waiting to join before the game can start. |
+| ✨🪽 bot_chat | Bots talking to players. |
+| ✨🪽 poi | Spawn a POI. |
+| ✨🪽 help_path | Spawns the compass help path effect at the given location. |
+| ✨🪽 muzzleflash3 | Alternative muzzleflash. |
+| ✨🪽 achievement | Triggers achievement. |
+
+## `solid_t`
+
+Solid types for game entities.
+
+| Member | Description |
+| --- | --- |
+| NOT | The entity has no collision. |
+| TRIGGER | The entity only detects touch when something moves inside it. |
+| BBOX | The entity has a bounding box for collision detection. |
+| BSP | The entity uses BSP collision. |
+
+## Sound Attenuation
+
+Attenuation detemines how sound volume decrease with distance to the sound. These are defined as constant values.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 LOOP_NONE | Full volume over entire level; only used for looping sounds. |
+| NONE | Sound plays at full volume over the entire level. |
+| NORM | Normal auttenuation; sound diminishes over distance. |
+| IDLE | Higher attenuation; sound fades more quickly. |
+| STATIC | Very rapid attenuation; sound fades quickly when moving away from the source. |
+
+## `soundchan_t`
+
+Sound channel used to assign autio to different channel. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| AUTO | Default channel; does not override any sound. |
+| WEAPON | Used for weapon sounds. |
+| VOICE | UIsed for player and monster sounds. |
+| ITEM | Used for item interaction sounds. |
+| BODY | Used for body-related sounds like footsteps, pain and grunts. |
+| ✨🪽 AUX | |
+| ✨🪽 FOOTSTEP | |
+| ✨🪽 AUX3 | |
+| NO_PHS_ADD | Bitwise modifier flag; tells the sound to be sent to all clients not just the one in potential hearing set. |
+| RELIABLE | Bitwise modifier flag; tells the sound to be sent using a reliable message ensuring it will not be lost. |
+| ✨🪽 FORCE_POS | Bitwise modifier flag; Forced the sound position in the packet to be used. |
+
+## `splash_color_t`
+
+Splash color used to categorize different types of splash effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| UNKNOWN | Default or unknown splash type; same as zero. |
+| SPARKS | Creates sparks instead of liquid splash. |
+| BLUE_WATER | Represents splash effect in blue water. |
+| BROWN_WATER | Represents splash in muddy or dirty water. |
+| SLIME | Represents splash effect of green or toxic slime. |
+| LAVA | Represent splash of lava. |
+| BLOOD | Represents splash of blood. |
+| ✨🪽 ELECTRIC | Electric sparks that zaps. Used in N64. |
+
+## `surfflags_t`
+
+Surface flags are used to determine properties for materials and textures applied to brushes. These flags controls lighting, physics, rendering effects and texture behaviour. They are defined as bitflags meaning a surface can contain multiple flags. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+🍦✨ The enum constants are globals prefixed with the string `SURF_` to prevent name clashes.
+
+| Member | Description |
+| --- | --- |
+|LIGHT | Light surface; indicates that this surface will emit light. |
+| SLICK | Slippery surface; its only use in the base game is to have players be frictionless on them. |
+| SKY | Sky surface; marks the surface as sky. |
+| WARP | Warped surface; makes the texture distort dynamically, used for water, lava and other fluid surfaces. |
+| TRANS33 | 33% transparent surface. |
+| TRANS66 | 66% transparent surface. |
+| FLOWING | Flowing surface; Causes the texture to scroll in a specific direction (determined by the brush's angle). Used for water current, lava flows and conveyor belts. |  
+| NODRAW | Flag used when the surface should never be drawn. Used for invisible collision brushes. |
+| ✨🪽 ALPHATEST | Enable alpha testing (on/off transparency) for the surface. |
+| ✨🪽 N64_UV | Halves the texture size (Specific to N64). |
+| ✨🪽 N64_SCROLL_X | Causes textures to scroll in the X axis (Specific to N64).  |
+| ✨🪽 N64_SCROLL_Y | Causes textures to scroll in the Y axis (Specific to N64). |
+| ✨🪽 N64_SCROLL_FLIP | Flips the scrolling axis (Specific to N64). |
+
+## ✨🪽 `svc_fog_data_t`
+
+This is data used to define fog used in a [fog server command; see server_command](Types#server_command_t).
+
+| Member | Description |
+| --- | --- |
+| bits | [Bits; see bits_t](Types#bits_t). |
+| density | Fog density; taken from `BIT_DENSITY` flag from `bits`. |
+| skyfactor | Fog sky factor; taken from `BIT_DENSITY` flag from `bits`. |
+| red | Fog red channel; taken from `BIT_R` flag from `bits`. |
+| green | Fog green channel; taken from `BIT_G` flag from `bits`. |
+| blue | Fog blue channel; taken from `BIT_B` flag from `bits`. |
+| time | Fog transition time in milliseconds; taken from `BIT_TIME` flag from `bits`. |
+| hf_falloff | Heightfog falloff; taken from `BIT_HEIGHTFOG_FALLOFF` flag from `bits`. |
+| hf_density | Heightfog density; taken from `BIT_HEIGHTFOG_DENSITY` flag from `bits`. |
+| hf_start_r | Heightfog start red channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_start_g | Heightfog start green channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_start_b | Heightfog start blue channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`.  |
+| hf_start_dist | Heightfog start distance; taken from `BIT_HEIGHTFOG_START_DIST` and `BIT_MORE_BITS` flag from `bits`.  |
+| hf_end_r | Heightfog end red channel; taken from `BIT_HEIGHTFOG_END_R` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_g | Heightfog end green channel; taken from `BIT_HEIGHTFOG_END_G` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_b | Heightfog end blue channel; taken from `BIT_HEIGHTFOG_END_B` and `BIT_MORE_BITS` flag from `bits`. |
+| hf_end_dist | Heightfog end distance; taken from `BIT_HEIGHTFOG_END_DIST` and `BIT_MORE_BITS` flag from `bits`. |
+
+### `bits_t`
+
+Bitflags to define the contents of [fog server data; see svc_fog_data_t](Types#svc_fog_data_t).
+
+| Member | Description |
+| --- | --- |
+| BIT_DENSITY | Fog density. |
+| BIT_R | Fog red channel. |
+| BIT_G | Fog green channel. |
+| BIT_B | Fog blue channel. |
+| BIT_TIME | Fog transition time in milliseconds. |
+| BIT_HEIGHTFOG_FALLOFF | Heightfog falloff. |
+| BIT_HEIGHTFOG_DENSITY | Heightfog density. |
+| BIT_MORE_BITS | If additional bits are included in the message. |
+| BIT_HEIGHTFOG_START_R | Heightfog start red channel. |
+| BIT_HEIGHTFOG_START_G | Heightfog start green channel. |
+| BIT_HEIGHTFOG_START_B | Heightfog start blue channel. |
+| BIT_HEIGHTFOG_START_DIST | Heightfog start distance. |
+| BIT_HEIGHTFOG_END_R | Heightfog end red channel. |
+| BIT_HEIGHTFOG_END_G | Heightfog end green channel. |
+| BIT_HEIGHTFOG_END_B | Heightfog end blue channel. |
+| BIT_HEIGHTFOG_END_DIST | Heightfog end distance. |
+
+## `svflags_t`
+
+Server side flags that determines how entities behave and interact with the game world. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+
+| Member | Description |
+| --- | --- |
+| ✨🪽 NONE | Representation for no flags; the same as zero.|
+| NOCLIENT | Prevents the entity from being sent to clients, makes it invisible even if it has effects. |
+| DEADMONSTER | Marks the entity as a dead monster. |
+| MONSTER | Marks the entity as a monster. |
+| ✨🪽 PLAYER | Causes the entity to be treated as `CONTENTS_PLAYER`. |
+| ✨🪽 BOT | Marks the entity as a bot. |
+| ✨🪽 NOBOTS | Tells the bot subsystem to ignore this entity. |
+| ✨🪽 RESPAWNING | This flag hints to the bot subsystem about items respawning. |
+| ✨🪽 PROJECTILE | Treats the entity as `CONTENTS_PROJECTILE` for collision. |
+| ✨🪽 INSTANCED | This flag marks the entity as being instanced. |
+| ✨🪽 DOOR | This flag informs the bot subsystem that the entity is a door. |
+| ✨🪽 NOCULL | This flag overrides the client frame building culling routines causing entity to always be sent. |
+| ✨🪽 HULL | This flag adjusts the servers method of clipping movement to entities. |
 
 ## `temp_event_t`
 
@@ -699,234 +864,69 @@ Temporary entity events, enum that defines various temporary, short-lived entity
 | ✨🪽 EXPLOSION1_NL | Visual effect for explosion that don't include dynamic light. |
 | ✨🪽 EXPLOSION2_NL | Alternative effect for explosion that don't include dynamic light. |
 
-## `splash_color_t`
+## time
 
-Splash color used to categorize different types of splash effects. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+Time in Quake II is represented as a number that is kept track of on the game side. The game [runs a level tick](Level-Lifecycle.md) which increases the current time of the level, and this value persists separately on levels (every new level always starts at a time of zero).
 
-| Member | Description |
-| --- | --- |
-| UNKNOWN | Default or unknown splash type; same as zero. |
-| SPARKS | Creates sparks instead of liquid splash. |
-| BLUE_WATER | Represents splash effect in blue water. |
-| BROWN_WATER | Represents splash in muddy or dirty water. |
-| SLIME | Represents splash effect of green or toxic slime. |
-| LAVA | Represent splash of lava. |
-| BLOOD | Represents splash of blood. |
-| ✨🪽 ELECTRIC | Electric sparks that zaps. Used in N64. |
+🍦 Times are represented as `float` **seconds** in most cases, and in a few other cases they are stored as `int` **frames**. A frame in Quake II is 100 milliseconds (10hz). The `FRAMETIME` macro contains the number of seconds in a frame (0.1) which can be used to convert to other units.
 
-## `soundchan_t`
+✨🪽 Times are represented as `int64` and stored in the `gtime_t` type. It contains several functions to create times from different units, as well as converting those times back into different components. (✨ You can also use the `_ms`, `_sec`, etc literal postfixes to easily create constants of units of time.) The game imports some useful constants from the server for timing, such as [`frame_time_s`](Server-Imports#frame_time_s) and [`frame_time_ms`](Server-Imports#frame_time_ms), to use for calculations.
 
-Sound channel used to assign autio to different channel. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
+## ✨🪽 `touch_list_t`
+
+Touch list collection of touches that occurs during movement. Each trace in the collection refers to a box or point that has been collided with.
 
 | Member | Description |
 | --- | --- |
-| AUTO | Default channel; does not override any sound. |
-| WEAPON | Used for weapon sounds. |
-| VOICE | UIsed for player and monster sounds. |
-| ITEM | Used for item interaction sounds. |
-| BODY | Used for body-related sounds like footsteps, pain and grunts. |
-| ✨🪽 AUX | |
-| ✨🪽 FOOTSTEP | |
-| ✨🪽 AUX3 | |
-| NO_PHS_ADD | Bitwise modifier flag; tells the sound to be sent to all clients not just the one in potential hearing set. |
-| RELIABLE | Bitwise modifier flag; tells the sound to be sent using a reliable message ensuring it will not be lost. |
-| ✨🪽 FORCE_POS | Bitwise modifier flag; Forced the sound position in the packet to be used. |
+| num | The number of collision traces currently stored within the list. |
+| traces | A fixed size array of [traces; see trace_t](Types#trace_t). |
 
-## Sound Attenuation
+## `trace_t`
 
-Attenuation detemines how sound volume decrease with distance to the sound. These are defined as constant values.
+This struct is returned by value by the trace functions ([gi.trace](Server-Imports#trace)), and contains information about a box or point that is sweeped through the BSP and through entities.
 
 | Member | Description |
 | --- | --- |
-| ✨🪽 LOOP_NONE | Full volume over entire level; only used for looping sounds. |
-| NONE | Sound plays at full volume over the entire level. |
-| NORM | Normal auttenuation; sound diminishes over distance. |
-| IDLE | Higher attenuation; sound fades more quickly. |
-| STATIC | Very rapid attenuation; sound fades quickly when moving away from the source. |
+| allsolid | If the trace is completely inside of a brush with the input content `mask`, this will be true.  |
+| startsolid | If the trace started inside of a brush with the input content `mask` but was able to escape, this will be true (usually for partially-occluded collisions). |
+| fraction | How far the trace moved between `start` and `end` of the trace before hitting something, as a fraction between `0.0` and `1.0`. If the value is `1.0`, nothing was hit (`endpos` will equal `end`). If the value is `0.0`, something was hit immediately (`endpos` will equal `start`). Any other value is interpolated between the two positions by this value. |
+| endpos | The final position where the trace stopped. |
+| plane | The surface normal at impact. |
+| surface | The surface that was hit. ✨🪽 This value will never be `null`. |
+| contents | The content flags of the brush that was hit; [Content flags; see contents_t](Types#contents_t) |
+| ent | The entity that was hit (if there was one). This is very rarely (if ever) `null`, and will instead point to the `world` if nothing was hit. |
+| ✨🪽 plane2 | When a trace impacts multiple places at destination the collision system will now require both of them; this is the 'second best' plane. |
+| ✨🪽 surface2 | The second best surface hit. Will be `null` if a second surface was not hit. |
 
-## ✨🪽 `game_style_t`
+## `usercmd_t`
 
-Enumeration describing different game styles.
-
-| Member | Description |
-| --- | --- |
-| PVE | Player versus environment mode. |
-| FFA | Free for all mode. |
-| TDM | Team deathmatch mode. |
-
-## Config Strings
-
-Config strings are used to send game data from the server to all clients. These strings can store information such about map settings, models, sounds and player skins.
+Usercommand that represents a player's input comands that is sent from the client to the server each frame.
 
 | Member | Description |
 | --- | --- |
-| NAME | Server name. |
-| CDTRACK | Background music CD track to play. |
-| SKY | Name of the skybox texture used in the map. |
-| SKYAXIS | Rotation axis of the skybox. |
-| SKYROTATE | Rotation speed of the skybox. |
-| STATUSBAR | Status bar layout, used to display HUD elements. |
-| AIRACCEL | Controls air acceleration. |
-| MAXCLIENTS | Maximum number of players allowed on the server. |
-| MODELS | Start index for the model filenames. |
-| SOUNDS | Start index for the sound filenames. |
-| IMAGES | Start index for the image filenames. |
-| LIGHTS | Start index for the light defintions. |
-| ✨🪽 SHADOWLIGHTS | Shadow light entries. |
-| ITEMS | Start index for the item definitions. |
-| PLAYERSKINS | Start index for the player skins. |
-| GENERAL | Start index for general configuration strings. |
-| ✨🪽 WHEEL_WEAPONS | Weapon entries for the weapon wheel. |
-| ✨🪽 WHEEL_AMMO | Weapon ammo types entries for the weapon wheel. |
-| ✨🪽 WHEEL_POWERUPS | Powerup entries for the powerup wheel. |
-| ✨🪽 CD_LOOP_COUNT | Integer that defines how many times to loop the music before switching to ambient track. |
-| ✨🪽 GAME_STYLE | [Game style; see game_style_t](Types#game_style_t). |
+| msec | The frame time in milliseconds since the last command. |
+| buttons | [Button bitmask; see button_t](Types#button_t) |
+| angles | View angles (yaw, pitch, roll). |
+| forwardmove | Player movement along the forward axis; positive value means forward, negative value means backwards. |
+| sidemove | Player movement along the left/right axis; positive value means right, negative value means left. |
+| 🍦 upmove | Player movement along the vertical axis; positive means up or jumping, negative means down or crouching. |
+| 🍦 impulse | A vestigial from Quake, referring to the `impulse` passed from the last impulse cmd. Not used by the game; use `ClientCommand` commands instead. |
+| 🍦 lightlevel | Light level at the players position; used for AI behaviour. |
+| ✨🪽 server_frame | Tells the server which server frame that the input was depressed on; used for integrity checks and anti-lag hitscan. |
 
-## `entity_event_t`
+## `vec3_t`
 
-Entity events related to in-game entities, represents effects that occur relative to an entity's position.
+A 3d vector; it might represent a position, a unit vector, a vector * magnitude, or even Euler angles. There are several global functions to manipulate them - most of them have `vec` in their name somewhere (✨🪽 and member functions of vec3_t, which is where most of the globals were moved to).
 
-| Member | Description |
-| --- | --- |
-| NONE | No event; represents default as zero. |
-| ITEM_RESPAWN | Triggers when an item respawns. |
-| FOOTSTEP | Indicates that a player has taken a step. |
-| FALLSHORT | Represents a short fall that doesn't cause damage but triggers a landing sound. |
-| FALL | Represents a moderate fall that may cause damage and plays a landing sound. |
-| FALLFAR | Renresents a long fall that can cause significant damage or death. |
-| PLAYER_TELEPORT | Occurs when a player teleports; triggers visual and sound effect. |
-| OTHER_TELEPORT | Similar to `PLAYER_TELEPORT` but for other entities. |
-| ✨🪽 OTHER_FOOTSTEP | Similar to `FOOTSTEP` but for other entities. |
-| ✨🪽 LADDER_STEP | Ladder climbing footstep event. |
+🍦 Be careful when passing vectors as parameters, as the type is a simple typedef to a C array, and these have weird semantics.
 
-## 🍦 `svc_ops_e`<br/>✨🪽 `server_command_t`
+## `water_level_t`
 
-Definition of server commands. These messages help synchronize the game state between the server and client.
-
-| Member | Description |
-| --- | --- |
-| bad | Invalid or unknown server command. |
-| muzzleflash | Triggers a visual effect for a weapon firing, used for player weapons. |
-| muzzleflash2 | Similar to `muzzleflash` but for non player entities. |
-| temp_entity | Creates temporary entities such as explosion, blood splashes and other short-lived effects. |
-| layout | Updates the HUD layout. |
-| inventory | Updates the player's inventory items and ammo counts. |
-| nop | No operation; used as a placeholder or for keeping connection alive. |
-| disconnect | Signals that a client disconnected from the server. |
-| reconnect | Notifies the client that it should reconnect to the server. |
-| sound | Sends a sound effect to be played at a specific location. |
-| print | Sends a text message to the client console. |
-| stufftext | Sends a command string to be executed in the client's console. |
-| serverdata | Provides the initial server information such as protocol version map name and max player count. |
-| configstring | Sends configuration data from the server to the client. |
-| spawnbaseline | Sends baseline entity data. |
-| centerprint | Displays a message in the center of the screen. |
-| download | Transfer files from the server to the client, used for downloading missing assets. |
-| playerinfo | Updates player state information such as position, angles and animation frames. |
-| packetentities | Sends a full list of entities and their states for a given frame. |
-| deltapacketentities | Sends full list of entity changes since the last frame. |
-| frame | Synchronizes the client with the server's game state. |
-| ✨🪽 splitclient | Indicates to the client which split screen player the next messages are directed towards. |
-| ✨🪽 configblast | Compressed configstring data. |
-| ✨🪽 spawnbaselineblast | Compressed baseline data. |
-| ✨🪽 level_restart | Sent when the server executes a `restart_level` command. |
-| ✨🪽 damage | Sent after accumulating damage on a player. |
-| ✨🪽 locprint | New entrypoint for prints. |
-| ✨🪽 fog | [Fog data; see svc_fog_data_t](Types#svc_fog_data_t). |
-| ✨🪽 waitingforplayers | Sent when there are players waiting to join before the game can start. |
-| ✨🪽 bot_chat | Bots talking to players. |
-| ✨🪽 poi | Spawn a POI. |
-| ✨🪽 help_path | Spawns the compass help path effect at the given location. |
-| ✨🪽 muzzleflash3 | Alternative muzzleflash. |
-| ✨🪽 achievement | Triggers achievement. |
-
-## ✨🪽 `svc_fog_data_t`
-
-This is data used to define fog used in a [fog server command; see server_command](Types#server_command_t).
-
-| Member | Description |
-| --- | --- |
-| bits | [Bits; see bits_t](Types#bits_t). |
-| density | Fog density; taken from `BIT_DENSITY` flag from `bits`. |
-| skyfactor | Fog sky factor; taken from `BIT_DENSITY` flag from `bits`. |
-| red | Fog red channel; taken from `BIT_R` flag from `bits`. |
-| green | Fog green channel; taken from `BIT_G` flag from `bits`. |
-| blue | Fog blue channel; taken from `BIT_B` flag from `bits`. |
-| time | Fog transition time in milliseconds; taken from `BIT_TIME` flag from `bits`. |
-| hf_falloff | Heightfog falloff; taken from `BIT_HEIGHTFOG_FALLOFF` flag from `bits`. |
-| hf_density | Heightfog density; taken from `BIT_HEIGHTFOG_DENSITY` flag from `bits`. |
-| hf_start_r | Heightfog start red channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
-| hf_start_g | Heightfog start green channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`. |
-| hf_start_b | Heightfog start blue channel; taken from `BIT_HEIGHTFOG_START_R` and `BIT_MORE_BITS` flag from `bits`.  |
-| hf_start_dist | Heightfog start distance; taken from `BIT_HEIGHTFOG_START_DIST` and `BIT_MORE_BITS` flag from `bits`.  |
-| hf_end_r | Heightfog end red channel; taken from `BIT_HEIGHTFOG_END_R` and `BIT_MORE_BITS` flag from `bits`. |
-| hf_end_g | Heightfog end green channel; taken from `BIT_HEIGHTFOG_END_G` and `BIT_MORE_BITS` flag from `bits`. |
-| hf_end_b | Heightfog end blue channel; taken from `BIT_HEIGHTFOG_END_B` and `BIT_MORE_BITS` flag from `bits`. |
-| hf_end_dist | Heightfog end distance; taken from `BIT_HEIGHTFOG_END_DIST` and `BIT_MORE_BITS` flag from `bits`. |
-
-### `bits_t`
-
-Bitflags to define the contents of [fog server data; see svc_fog_data_t](Types#svc_fog_data_t).
-
-| Member | Description |
-| --- | --- |
-| BIT_DENSITY | Fog density. |
-| BIT_R | Fog red channel. |
-| BIT_G | Fog green channel. |
-| BIT_B | Fog blue channel. |
-| BIT_TIME | Fog transition time in milliseconds. |
-| BIT_HEIGHTFOG_FALLOFF | Heightfog falloff. |
-| BIT_HEIGHTFOG_DENSITY | Heightfog density. |
-| BIT_MORE_BITS | If additional bits are included in the message. |
-| BIT_HEIGHTFOG_START_R | Heightfog start red channel. |
-| BIT_HEIGHTFOG_START_G | Heightfog start green channel. |
-| BIT_HEIGHTFOG_START_B | Heightfog start blue channel. |
-| BIT_HEIGHTFOG_START_DIST | Heightfog start distance. |
-| BIT_HEIGHTFOG_END_R | Heightfog end red channel. |
-| BIT_HEIGHTFOG_END_G | Heightfog end green channel. |
-| BIT_HEIGHTFOG_END_B | Heightfog end blue channel. |
-| BIT_HEIGHTFOG_END_DIST | Heightfog end distance. |
-
-## `svflags_t`
-
-Server side flags that determines how entities behave and interact with the game world. In 🍦 these flags are defined as constant values while in ✨🪽 it is an enum type.
-
-| Member | Description |
-| --- | --- |
-| ✨🪽 NONE | Representation for no flags; the same as zero.|
-| NOCLIENT | Prevents the entity from being sent to clients, makes it invisible even if it has effects. |
-| DEADMONSTER | Marks the entity as a dead monster. |
-| MONSTER | Marks the entity as a monster. |
-| ✨🪽 PLAYER | Causes the entity to be treated as `CONTENTS_PLAYER`. |
-| ✨🪽 BOT | Marks the entity as a bot. |
-| ✨🪽 NOBOTS | Tells the bot subsystem to ignore this entity. |
-| ✨🪽 RESPAWNING | This flag hints to the bot subsystem about items respawning. |
-| ✨🪽 PROJECTILE | Treats the entity as `CONTENTS_PROJECTILE` for collision. |
-| ✨🪽 INSTANCED | This flag marks the entity as being instanced. |
-| ✨🪽 DOOR | This flag informs the bot subsystem that the entity is a door. |
-| ✨🪽 NOCULL | This flag overrides the client frame building culling routines causing entity to always be sent. |
-| ✨🪽 HULL | This flag adjusts the servers method of clipping movement to entities. |
-
-## `solid_t`
-
-Solid types for game entities.
-
-| Member | Description |
-| --- | --- |
-| NOT | The entity has no collision. |
-| TRIGGER | The entity only detects touch when something moves inside it. |
-| BBOX | The entity has a bounding box for collision detection. |
-| BSP | The entity uses BSP collision. |
-
-## `layout_flags_t`
-
-New layout flags type (added in ✨🪽) that is used to give names to the different layout types that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name. These are bitflags meaning multiple values can be active at once.
+New waterlevel type (added in ✨🪽) that is used to give names to the different water levels that in 🍦 had no names. In 🍦 these are hardcoded as magic numbers rather than referred to by name.
 
 | Value | Member | Description |
 | --- | --- | --- |
-| 0 | LAYOUT | Layout is active. |
-| 1 | INVENTORY | Inventory is active. |
-| 2 | HIDE_HUD | Hide the entire hud. |
-| 3 | INTERMISSION | Intermission is being drawn; collapse splitscreen into a single screen. |
-| 4 | HELP | Help screen is active. |
-| 5 | HIDE_CROSSHAIR | Hide crosshair only. |
+| 0 | NONE | Not touching water. |
+| 1 | FEET | Water is at feet level. |
+| 2 | WAIST | Water is at waist level.  |
+| 3 | UNDER | Entity is completely under water. |
